@@ -1,166 +1,129 @@
 #!/bin/bash
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
-pyenv_bin=/www/server/panel/pyenv/bin
-rep_path=${pyenv_bin}:$PATH
-if [ -d "$pyenv_bin" ];then
-	PATH=$rep_path
-fi
 export PATH
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US:en
+LANG=en_US.UTF-8
 
-NODE_FILE_CHECK=$(cat /www/server/panel/data/node.json |grep 125.88.182.172)
-if [ "${NODE_FILE_CHECK}" ];then
-	rm -f /www/server/panel/data/node.json
-fi
-
-get_node_url(){
-	nodes=(https://dg2.bt.cn https://download.bt.cn https://ctcc1-node.bt.cn https://cmcc1-node.bt.cn https://ctcc2-node.bt.cn https://hk1-node.bt.cn https://na1-node.bt.cn https://jp1-node.bt.cn https://cf1-node.aapanel.com);
-
-	if [ "$1" ];then
-		nodes=($(echo ${nodes[*]}|sed "s#${1}##"))
-	fi
-
-	tmp_file1=/dev/shm/net_test1.pl
-	tmp_file2=/dev/shm/net_test2.pl
-	[ -f "${tmp_file1}" ] && rm -f ${tmp_file1}
-	[ -f "${tmp_file2}" ] && rm -f ${tmp_file2}
-	touch $tmp_file1
-	touch $tmp_file2
-	for node in ${nodes[@]};
-	do
-		NODE_CHECK=$(curl --connect-timeout 3 -m 3 2>/dev/null -w "%{http_code} %{time_total}" ${node}/net_test|xargs)
-		RES=$(echo ${NODE_CHECK}|awk '{print $1}')
-		NODE_STATUS=$(echo ${NODE_CHECK}|awk '{print $2}')
-		TIME_TOTAL=$(echo ${NODE_CHECK}|awk '{print $3 * 1000 - 500 }'|cut -d '.' -f 1)
-		if [ "${NODE_STATUS}" == "200" ];then
-			if [ $TIME_TOTAL -lt 300 ];then
-				if [ $RES -ge 1500 ];then
-					echo "$RES $node" >> $tmp_file1
-				fi
-			else
-				if [ $RES -ge 1500 ];then
-					echo "$TIME_TOTAL $node" >> $tmp_file2
-				fi
-			fi
-
-			i=$(($i+1))
-			if [ $TIME_TOTAL -lt 300 ];then
-				if [ $RES -ge 2390 ];then
-					break;
-				fi
-			fi	
-		fi
-	done
-
-	NODE_URL=$(cat $tmp_file1|sort -r -g -t " " -k 1|head -n 1|awk '{print $2}')
-	if [ -z "$NODE_URL" ];then
-		NODE_URL=$(cat $tmp_file2|sort -g -t " " -k 1|head -n 1|awk '{print $2}')
-		if [ -z "$NODE_URL" ];then
-			NODE_URL='https://download.bt.cn';
-		fi
-	fi
-	rm -f $tmp_file1
-	rm -f $tmp_file2
-}
-
-GetCpuStat(){
-	time1=$(cat /proc/stat |grep 'cpu ')
-	sleep 1
-	time2=$(cat /proc/stat |grep 'cpu ')
-	cpuTime1=$(echo ${time1}|awk '{print $2+$3+$4+$5+$6+$7+$8}')
-	cpuTime2=$(echo ${time2}|awk '{print $2+$3+$4+$5+$6+$7+$8}')
-	runTime=$((${cpuTime2}-${cpuTime1}))
-	idelTime1=$(echo ${time1}|awk '{print $5}')
-	idelTime2=$(echo ${time2}|awk '{print $5}')
-	idelTime=$((${idelTime2}-${idelTime1}))
-	useTime=$(((${runTime}-${idelTime})*3))
-	[ ${useTime} -gt ${runTime} ] && cpuBusy="true"
-	if [ "${cpuBusy}" == "true" ]; then
-		cpuCore=$((${cpuInfo}/2))
-	else
-		cpuCore=$((${cpuInfo}-1))
-	fi
-}
-GetPackManager(){
-	if [ -f "/usr/bin/yum" ] && [ -f "/etc/yum.conf" ]; then
-		PM="yum"
-	elif [ -f "/usr/bin/apt-get" ] && [ -f "/usr/bin/dpkg" ]; then
-		PM="apt-get"		
-	fi
-}
-
-bt_check(){
-	p_path=/www/server/panel/class/panelPlugin.py
-	if [ -f $p_path ];then
-		is_ext=$(cat $p_path|grep btwaf)
-		if [ "$is_ext" != "" ];then
-			send_check
-		fi
-	fi
-	
-	p_path=/www/server/panel/BTPanel/templates/default/index.html
-	if [ -f $p_path ];then
-		is_ext=$(cat $p_path|grep fbi)
-		if [ "$is_ext" != "" ];then
-			send_check
-		fi
-	fi
-}
-
-send_check(){
-	chattr -i /etc/init.d/bt
-	chmod +x /etc/init.d/bt
-	p_path2=/www/server/panel/class/common.py
-	p_version=$(cat $p_path2|grep "version = "|awk '{print $3}'|tr -cd [0-9.])
-	curl -sS --connect-timeout 3 -m 60 https://www.bt.cn/api/panel/notpro?version=$p_version
-	NODE_URL=""
+if [ ! -d /www/server/panel/BTPanel ];then
+	echo "============================================="
+	echo "Error, 5.x Can't use this command to upgrade!"
+	#echo "5.9 Smooth upgrade to 6.0 command：curl https://github.com/mzwrt/aapanel-6.8.37-backup/blob/6e7dcaf1903a1e6c9e6491424ce92b6620aeacee/install/update_to_6.sh|bash"
 	exit 0;
-}
-GetSysInfo(){
-	if [ "${PM}" = "yum" ]; then
-		SYS_VERSION=$(cat /etc/redhat-release)
-	elif [ "${PM}" = "apt-get" ]; then
-		SYS_VERSION=$(cat /etc/issue)
-	fi
-	SYS_INFO=$(uname -msr)
-	SYS_BIT=$(getconf LONG_BIT)
-	MEM_TOTAL=$(free -m|grep Mem|awk '{print $2}')
-	CPU_INFO=$(getconf _NPROCESSORS_ONLN)
-	GCC_VER=$(gcc -v 2>&1|grep "gcc version"|awk '{print $3}')
-	CMAKE_VER=$(cmake --version|grep version|awk '{print $3}')
-
-	echo -e ${SYS_VERSION}
-	echo -e Bit:${SYS_BIT} Mem:${MEM_TOTAL}M Core:${CPU_INFO} gcc:${GCC_VER} cmake:${CMAKE_VER}
-	echo -e ${SYS_INFO}
-}
-cpuInfo=$(getconf _NPROCESSORS_ONLN)
-if [ "${cpuInfo}" -ge "4" ];then
-	GetCpuStat
-else
-	cpuCore="1"
-fi
-GetPackManager
-
-if [ -d "/www/server/phpmyadmin/pma" ];then
-	rm -rf /www/server/phpmyadmin/pma
-	EN_CHECK=$(cat /www/server/panel/config/config.json |grep English)
-	if [ "${EN_CHECK}" ];then
-		curl https://download.bt.cn/install/update6_en.sh|bash
-	else
-		curl https://download.bt.cn/install/update6.sh|bash
-	fi
-	echo > /www/server/panel/data/restart.pl
 fi
 
-if [ ! $NODE_URL ];then
-	EN_CHECK=$(cat /www/server/panel/config/config.json |grep English)
-	if [ -z "${EN_CHECK}" ];then
-		echo '正在选择下载节点...';
-	else
-		echo "selecting download node...";
+public_file=/www/server/panel/install/public.sh
+publicFileMd5=$(md5sum ${public_file} 2>/dev/null|awk '{print $1}')
+md5check="f7851068df79770851b771f669a431aa"
+if [ "${publicFileMd5}" != "${md5check}"  ]; then
+	wget -O Tpublic.sh https://github.com/mzwrt/aapanel-6.8.37-backup/blob/d03b25be0570bcfaae82efa4ba044c0966323792/install/public.sh -T 20;
+	publicFileMd5=$(md5sum Tpublic.sh 2>/dev/null|awk '{print $1}')
+	if [ "${publicFileMd5}" == "${md5check}"  ]; then
+		\cp -rpa Tpublic.sh $public_file
 	fi
-	get_node_url
-	bt_check
+	rm -f Tpublic.sh
+fi
+. $public_file
+
+Centos8Check=$(cat /etc/redhat-release | grep ' 8.' | grep -iE 'centos|Red Hat')
+if [ "${Centos8Check}" ];then
+	if [ ! -f "/usr/bin/python" ] && [ -f "/usr/bin/python3" ] && [ ! -d "/www/server/panel/pyenv" ]; then
+		ln -sf /usr/bin/python3 /usr/bin/python
+	fi
 fi
 
+mypip="pip"
+env_path=/www/server/panel/pyenv/bin/activate
+if [ -f $env_path ];then
+	mypip="/www/server/panel/pyenv/bin/pip"
+fi
+
+download_Url=$NODE_URL
+setup_path=/www
+version=$(curl -Ss --connect-timeout 5 -m 2 https://brandnew.aapanel.com/api/panel/getLatestOfficialVersion)
+if [ "$version" = '' ];then
+	version='6.8.31'
+fi
+
+wget -T 5 -O /tmp/panel.zip https://github.com/mzwrt/aapanel-6.8.37-backup/blob/d03b25be0570bcfaae82efa4ba044c0966323792/install/panel6_en.zip
+
+dsize=$(du -b /tmp/panel.zip|awk '{print $1}')
+if [ $dsize -lt 10240 ];then
+	echo "Failed to get update package, please update or contact aaPanel Operation"
+	exit;
+fi
+unzip -o /tmp/panel.zip -d $setup_path/server/ > /dev/null
+rm -f /tmp/panel.zip
+
+is_aarch64=$(uname -a | grep aarch64)
+if [ "$is_aarch64" != "" ] && [ -f /www/server/panel/class/PluginLoader.aarch64.Python3.7.so ];then
+    \cp /www/server/panel/class/PluginLoader.aarch64.Python3.7.so /www/server/panel/class/PluginLoader.so
+fi
+
+is_x86_64=$(uname -a | grep x86_64)
+if [ "$is_x86_64" != "" ] && [ -f /www/server/panel/class/PluginLoader.x86_64.Python3.7.so ];then
+    \cp /www/server/panel/class/PluginLoader.x86_64.Python3.7.so /www/server/panel/class/PluginLoader.so
+fi
+
+cd $setup_path/server/panel/
+check_bt=`cat /etc/init.d/bt`
+if [ "${check_bt}" = "" ];then
+	rm -f /etc/init.d/bt
+	wget -O /etc/init.d/bt https://github.com/mzwrt/aapanel-6.8.37-backup/blob/d03b25be0570bcfaae82efa4ba044c0966323792/install/bt6_en.init -T 20
+	chmod +x /etc/init.d/bt
+fi
+rm -f /www/server/panel/*.pyc
+rm -f /www/server/panel/class/*.pyc
+#pip install flask_sqlalchemy
+#pip install itsdangerous==0.24
+pip_list=$($mypip list)
+request_v=$(echo "$pip_list"|grep requests)
+if [ "$request_v" = "" ];then
+	$mypip install requests
+fi
+openssl_v=$(echo "$pip_list"|grep pyOpenSSL)
+if [ "$openssl_v" = "" ];then
+	$mypip install pyOpenSSL
+fi
+
+cffi_v=$(echo "$pip_list"|grep cffi|grep 1.12.)
+if [ "$cffi_v" = "" ];then
+	$mypip install cffi==1.12.3
+fi
+pymysql=$(echo "$pip_list"|grep pymysql)
+if [ "$pymysql" = "" ];then
+	$mypip install pymysql
+fi
+
+pymysql=$(echo "$pip_list"|grep pycryptodome)
+if [ "$pymysql" = "" ];then
+	$mypip install pycryptodome
+fi
+
+psutil=$(echo "$pip_list"|grep psutil|awk '{print $2}'|grep '5.7.')
+if [ "$psutil" = "" ];then
+	$mypip install -U psutil
+fi
+flask_sock=$(echo "$pip_list"|grep flask_sock)
+if [ "$flask_sock" = "" ];then
+	$mypip install -U flask-sock
+fi
+
+$mypip install python-telegram-bot==20.3
+$mypip install paramiko -I
+
+grep "www:x" /etc/passwd > /dev/null
+if [ "$?" != 0 ];then
+	Run_User="www"
+	groupadd ${Run_User}
+	useradd -s /sbin/nologin -g ${Run_User} ${Run_User}
+fi
+chattr -i /etc/init.d/bt
+chmod +x /etc/init.d/bt
+echo "====================================="
+rm -f /dev/shm/bt_sql_tips.pl
+process=$(ps aux|grep -E "task.pyc|main.py"|grep -v grep|awk '{print $2}')
+if [ "$process" != "" ];then
+	kill $process
+fi
+#/etc/init.d/bt restart
+echo 'True' > /www/server/panel/data/restart.pl
+echo "Successfully upgraded to[$version]${Ver}";
