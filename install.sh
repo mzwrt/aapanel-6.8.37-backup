@@ -143,7 +143,7 @@ Auto_Swap() {
 }
 Service_Add() {
     if Command_Exists systemctl ; then
-        wget --no-check-certificate -O /usr/lib/systemd/system/btpanel.service ${download_Url}/init/systemd/btpanel.service -t 5 -T 15
+        wget --no-check-certificate -O /usr/lib/systemd/system/btpanel.service https://github.com/mzwrt/aapanel-6.8.37-backup/blob/de03d5a9aa4ef7ab3907586f0a14a35c6ba9247e/install/btpanel.service -t 5 -T 15
         systemctl daemon-reload
         systemctl enable btpanel
 
