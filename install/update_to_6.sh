@@ -50,13 +50,13 @@ check_panel(){
 select_node(){
     public_file=/www/server/panel/install/public.sh
     if [ ! -f $public_file ];then
-        download_file $public_file https://github.com/mzwrt/aapanel-6.8.37-backup/blob/d03b25be0570bcfaae82efa4ba044c0966323792/install/public.sh
+        download_file $public_file https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/public.sh
     fi
 
     publicFileMd5=$(md5sum ${public_file}|awk '{print $1}')
     md5check="db0bc4ee0d73c3772aa403338553ff77"
     if [ "${publicFileMd5}" != "${md5check}"  ]; then
-        download_file $public_file https://github.com/mzwrt/aapanel-6.8.37-backup/blob/d03b25be0570bcfaae82efa4ba044c0966323792/install/public.sh
+        download_file $public_file https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/public.sh
     fi
 
     . $public_file
@@ -80,14 +80,14 @@ install_pack(){
 }
 
 install_python(){
-	curl -Ss --connect-timeout 3 -m 60 https://github.com/mzwrt/aapanel-6.8.37-backup/blob/d03b25be0570bcfaae82efa4ba044c0966323792/install/pip_select.sh|bash
+	curl -Ss --connect-timeout 3 -m 60 https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/pip_select.sh|bash
 	pyenv_path="/www/server/panel"
     python_bin=$pyenv_path/pyenv/bin/python
 	if [ -f $pyenv_path/pyenv/bin/python ];then
 		chmod -R 700 $pyenv_path/pyenv/bin
 		is_package=$($python_bin -m psutil 2>&1|grep package)
 		if [ "$is_package" = "" ];then
-			wget -O $pyenv_path/pyenv/pip.txt https://github.com/mzwrt/aapanel-6.8.37-backup/blob/27ac12628b9ab96ebe475ee795685d8968e58eed/install/pip.txt -T 5
+			wget -O $pyenv_path/pyenv/pip.txt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/pip.txt -T 5
 			$pyenv_path/pyenv/bin/pip install -U pip
 			$pyenv_path/pyenv/bin/pip install -U setuptools
 			$pyenv_path/pyenv/bin/pip install -r $pyenv_path/pyenv/pip.txt
@@ -161,8 +161,8 @@ install_python(){
 	fi
 	cd ~
 	rm -rf $python_src_path
-	wget -O $pyenv_path/pyenv/bin/activate https://github.com/mzwrt/aapanel-6.8.37-backup/blob/d03b25be0570bcfaae82efa4ba044c0966323792/install/activate.panel -T 5
-	wget -O $pyenv_path/pyenv/pip.txt https://github.com/mzwrt/aapanel-6.8.37-backup/blob/27ac12628b9ab96ebe475ee795685d8968e58eed/install/pip.txt -T 5
+	wget -O $pyenv_path/pyenv/bin/activate https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/activate.panel -T 5
+	wget -O $pyenv_path/pyenv/pip.txt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/pip.txt -T 5
 	ln -sf $pyenv_path/pyenv/bin/pip3.7 $pyenv_path/pyenv/bin/pip
 	ln -sf $pyenv_path/pyenv/bin/python3.7 $pyenv_path/pyenv/bin/python
     ln -sf $pyenv_path/pyenv/bin/pip3.7 /usr/bin/btpip
@@ -290,7 +290,7 @@ Get_Versions(){
 }
 
 update_panel(){
-    wget -T 5 -O /tmp/panel.zip https://github.com/mzwrt/aapanel-6.8.37-backup/blob/27ac12628b9ab96ebe475ee795685d8968e58eed/install/panel6_en.zip
+    wget -T 5 -O /tmp/panel.zip https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/panel6_en.zip
     dsize=$(du -b /tmp/panel.zip|awk '{print $1}')
     if [ $dsize -lt 10240 ];then
         echo "获取更新包失败，请稍后更新或联系宝塔运维"
@@ -302,14 +302,14 @@ update_panel(){
     check_bt=`cat /etc/init.d/bt|grep BT-Task`
     if [ "${check_bt}" = "" ];then
         rm -f /etc/init.d/bt
-        wget -O /etc/init.d/bt https://github.com/mzwrt/aapanel-6.8.37-backup/blob/27ac12628b9ab96ebe475ee795685d8968e58eed/install/bt6_en.init -T 20
+        wget -O /etc/init.d/bt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/bt6_en.init -T 20
         chmod +x /etc/init.d/bt
     fi
     rm -f /www/server/panel/*.pyc
     rm -f /www/server/panel/class/*.pyc
     if [ ! -f $setup_path/server/panel/config/config.json ];then
-        wget -T 5 -O $setup_path/server/panel/config/config.json https://github.com/mzwrt/aapanel-6.8.37-backup/blob/58e5097ac9520977f04a6529afdeab4435cd5a9d/install/config.json
-        wget -T 5 -O $setup_path/server/panel/config/dns_api.json https://github.com/mzwrt/aapanel-6.8.37-backup/blob/4743ce2f9faf8003425742f9df3cd50da9716c8b/install/dns_api.json
+        wget -T 5 -O $setup_path/server/panel/config/config.json https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/config.json
+        wget -T 5 -O $setup_path/server/panel/config/dns_api.json https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/dns_api.json
     fi
 
     chattr -i /etc/init.d/bt
