@@ -14,7 +14,7 @@ public_file=/www/server/panel/install/public.sh
 publicFileMd5=$(md5sum ${public_file} 2>/dev/null|awk '{print $1}')
 md5check="f7851068df79770851b771f669a431aa"
 if [ "${publicFileMd5}" != "${md5check}"  ]; then
-	wget -O Tpublic.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/public.sh -T 20;
+	wget -T 20 -O Tpublic.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/public.sh;
 	publicFileMd5=$(md5sum Tpublic.sh 2>/dev/null|awk '{print $1}')
 	if [ "${publicFileMd5}" == "${md5check}"  ]; then
 		\cp -rpa Tpublic.sh $public_file
@@ -67,7 +67,7 @@ cd $setup_path/server/panel/
 check_bt=`cat /etc/init.d/bt`
 if [ "${check_bt}" = "" ];then
 	rm -f /etc/init.d/bt
-	wget -O /etc/init.d/bt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/bt6_en.init -T 20
+	wget -T 20 -O /etc/init.d/bt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/bt6_en.init
 	chmod +x /etc/init.d/bt
 fi
 rm -f /www/server/panel/*.pyc
