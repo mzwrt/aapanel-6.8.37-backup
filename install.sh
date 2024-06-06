@@ -143,7 +143,7 @@ Auto_Swap() {
 }
 Service_Add() {
     if Command_Exists systemctl ; then
-        wget --no-check-certificate -O /usr/lib/systemd/system/btpanel.service https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/btpanel.service -t 5 -T 15
+        wget -t 5 -T 15 --no-check-certificate -O /usr/lib/systemd/system/btpanel.service https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/btpanel.service
         systemctl daemon-reload
         systemctl enable btpanel
 
@@ -455,7 +455,7 @@ Install_Python_Lib() {
             chmod -R 700 $pyenv_path/pyenv/bin
             is_package=$($python_bin -m psutil 2>&1 | grep package)
             if [ "$is_package" = "" ]; then
-                wget --no-check-certificate -O $pyenv_path/pyenv/pip.txt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/pip_en.txt -T 15
+                wget -T 15 --no-check-certificate -O $pyenv_path/pyenv/pip.txt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/pip_en.txt
                 $pyenv_path/pyenv/bin/pip install -U pip
                 $pyenv_path/pyenv/bin/pip install -U setuptools
                 $pyenv_path/pyenv/bin/pip install -r $pyenv_path/pyenv/pip.txt
@@ -579,8 +579,8 @@ Install_Python_Lib() {
     fi
     cd ~
     rm -rf $python_src_path
-    wget --no-check-certificate -O $pyenv_path/pyenv/bin/activate https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/activate.panel -T 15
-    wget --no-check-certificate -O $pyenv_path/pyenv/pip.txt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/pip-3.7.8.txt -T 15
+    wget -T 15 --no-check-certificate -O $pyenv_path/pyenv/bin/activate https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/activate.panel
+    wget -T 15 --no-check-certificate -O $pyenv_path/pyenv/pip.txt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/pip-3.7.8.txt
     ln -sf $pyenv_path/pyenv/bin/pip3.7 $pyenv_path/pyenv/bin/pip
     ln -sf $pyenv_path/pyenv/bin/python3.7 $pyenv_path/pyenv/bin/python
     ln -sf $pyenv_path/pyenv/bin/pip3.7 /usr/bin/btpip
@@ -639,9 +639,9 @@ Install_Bt() {
         sleep 1
     fi
 
-    wget --no-check-certificate -O panel.zip https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/panel6_en.zip -T 15
-    wget --no-check-certificate -O /etc/init.d/bt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/bt6_en.init -T 15
-    wget --no-check-certificate -O /www/server/panel/install/public.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/public.sh -T 15
+    wget -T 15 --no-check-certificate -O panel.zip https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/panel6_en.zip
+    wget -T 15 --no-check-certificate -O /etc/init.d/bt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/bt6_en.init
+    wget -T 15 --no-check-certificate -O /www/server/panel/install/public.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/public.sh
 
     if [ -f "${setup_path}/server/panel/data/default.db" ]; then
         if [ -d "/${setup_path}/server/panel/old_data" ]; then
@@ -690,8 +690,8 @@ Install_Bt() {
     chmod -R +x ${setup_path}/server/panel/script
     ln -sf /etc/init.d/bt /usr/bin/bt
     echo "${panelPort}" >${setup_path}/server/panel/data/port.pl
-    wget --no-check-certificate -O /etc/init.d/bt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/bt6_en.init -T 15
-    wget --no-check-certificate -O /www/server/panel/init.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/bt6_en.init -T 15
+    wget -T 15 --no-check-certificate -O /etc/init.d/bt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/bt6_en.init
+    wget -T 15 --no-check-certificate -O /www/server/panel/init.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/bt6_en.init
     wget --no-check-certificate -O /www/server/panel/data/softList.conf https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/softList_en.conf
 }
 # Other_Openssl() {
