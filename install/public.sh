@@ -6,7 +6,7 @@ LANG=en_US.UTF-8
 if [ ! -d /www/server/panel/BTPanel ];then
 	echo "============================================="
 	echo "Error, 5.x Can't use this command to upgrade!"
-	#echo "5.9 Smooth upgrade to 6.0 command：curl https://github.com/mzwrt/aapanel-6.8.37-backup/blob/6e7dcaf1903a1e6c9e6491424ce92b6620aeacee/install/update_to_6.sh|bash"
+	#echo "5.9 Smooth upgrade to 6.0 command：curl https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/update_to_6.sh|bash"
 	exit 0;
 fi
 
@@ -14,7 +14,7 @@ public_file=/www/server/panel/install/public.sh
 publicFileMd5=$(md5sum ${public_file} 2>/dev/null|awk '{print $1}')
 md5check="f7851068df79770851b771f669a431aa"
 if [ "${publicFileMd5}" != "${md5check}"  ]; then
-	wget -O Tpublic.sh https://github.com/mzwrt/aapanel-6.8.37-backup/blob/d03b25be0570bcfaae82efa4ba044c0966323792/install/public.sh -T 20;
+	wget -O Tpublic.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/public.sh -T 20;
 	publicFileMd5=$(md5sum Tpublic.sh 2>/dev/null|awk '{print $1}')
 	if [ "${publicFileMd5}" == "${md5check}"  ]; then
 		\cp -rpa Tpublic.sh $public_file
@@ -43,7 +43,7 @@ if [ "$version" = '' ];then
 	version='6.8.31'
 fi
 
-wget -T 5 -O /tmp/panel.zip https://github.com/mzwrt/aapanel-6.8.37-backup/blob/d03b25be0570bcfaae82efa4ba044c0966323792/install/panel6_en.zip
+wget -T 5 -O /tmp/panel.zip https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/panel6_en.zip
 
 dsize=$(du -b /tmp/panel.zip|awk '{print $1}')
 if [ $dsize -lt 10240 ];then
@@ -67,7 +67,7 @@ cd $setup_path/server/panel/
 check_bt=`cat /etc/init.d/bt`
 if [ "${check_bt}" = "" ];then
 	rm -f /etc/init.d/bt
-	wget -O /etc/init.d/bt https://github.com/mzwrt/aapanel-6.8.37-backup/blob/d03b25be0570bcfaae82efa4ba044c0966323792/install/bt6_en.init -T 20
+	wget -O /etc/init.d/bt https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install/bt6_en.init -T 20
 	chmod +x /etc/init.d/bt
 fi
 rm -f /www/server/panel/*.pyc
