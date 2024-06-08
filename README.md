@@ -15,9 +15,7 @@
              ufw allow 20/tcp
             ufw allow 21/tcp
             ufw allow 22/tcp
-            ufw allow 80/tcp
-            ufw allow 443/tcp
             ufw allow 888/tcp
             ufw allow 39000:40000/tcp
 
-默认只添加ssh端口和面板端口
+默认只添加80,443,ssh端口和面板端口
