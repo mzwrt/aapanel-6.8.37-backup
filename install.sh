@@ -858,13 +858,6 @@ Set_Firewall() {
     if [ "${PM}" = "apt-get" ]; then
         apt-get install -y ufw
         if [ -f "/usr/sbin/ufw" ]; then
-            ufw allow 20/tcp
-            ufw allow 21/tcp
-            ufw allow 22/tcp
-            ufw allow 80/tcp
-            ufw allow 443/tcp
-            ufw allow 888/tcp
-            ufw allow 39000:40000/tcp
             ufw allow ${panelPort}/tcp
             ufw allow ${sshPort}/tcp
             ufw_status=$(ufw status)
