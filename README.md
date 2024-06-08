@@ -12,7 +12,7 @@
 
 删除默认添加的以下端口
 
-             ufw allow 20/tcp
+            ufw allow 20/tcp
             ufw allow 21/tcp
             ufw allow 22/tcp
             ufw allow 888/tcp
