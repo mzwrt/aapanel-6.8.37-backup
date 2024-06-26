@@ -527,10 +527,12 @@ Install_Python_Lib() {
     fi
     if [ "${os_version}" != "" ]; then
         pyenv_file="/www/pyenv.tar.gz"
-        wget --no-check-certificate -O $pyenv_file $download_Url/install/pyenv/pyenv-${os_type}${os_version}-x${is64bit}.tar.gz -T 15
+        #wget --no-check-certificate -O $pyenv_file $download_Url/install/pyenv/pyenv-${os_type}${os_version}-x${is64bit}.tar.gz -T 15
+	wget --no-check-certificate -O $pyenv_file https://github.com/mzwrt/aapanel-6.8.37-backup/releases/download/python/pyenv-${os_type}${os_version}-x${is64bit}.tar.gz -T 15
         if [ "$?" != "0" ];then
             get_node_url $download_Url
-            wget --no-check-certificate -O $pyenv_file $download_Url/install/pyenv/pyenv-${os_type}${os_version}-x${is64bit}.tar.gz -T 15
+            #wget --no-check-certificate -O $pyenv_file $download_Url/install/pyenv/pyenv-${os_type}${os_version}-x${is64bit}.tar.gz -T 15
+            wget --no-check-certificate -O $pyenv_file https://github.com/mzwrt/aapanel-6.8.37-backup/releases/download/python/pyenv-${os_type}${os_version}-x${is64bit}.tar.gz -T 15
         fi
         tmp_size=$(du -b $pyenv_file | awk '{print $1}')
         if [ $tmp_size -lt 703460 ]; then
