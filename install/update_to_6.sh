@@ -112,7 +112,8 @@ install_python(){
 	up_plugin=1
 	if [ "${os_version}" != "" ];then
 		pyenv_file="/www/pyenv.tar.gz"
-		wget -O $pyenv_file $download_Url/install/pyenv/pyenv-${os_type}${os_version}-x${is64bit}.tar.gz -T 10
+		#wget -O $pyenv_file $download_Url/install/pyenv/pyenv-${os_type}${os_version}-x${is64bit}.tar.gz -T 10
+  		wget -O $pyenv_file https://github.com/mzwrt/aapanel-6.8.37-backup/releases/download/pyenv/pyenv-${os_type}${os_version}-x${is64bit}.tar.gz -T 10
 		tmp_size=$(du -b $pyenv_file|awk '{print $1}')
 		if [ $tmp_size -lt 703460 ];then
 			rm -f $pyenv_file
@@ -143,7 +144,8 @@ install_python(){
 	cd /www
 	python_src='/www/python_src.tar.xz'
 	python_src_path="/www/Python-${py_version}"
-	wget -O $python_src $download_Url/src/Python-${py_version}.tar.xz -T 5
+	#wget -O $python_src $download_Url/src/Python-${py_version}.tar.xz -T 5
+ 	wget -O $python_src https://github.com/mzwrt/aapanel-6.8.37-backup/releases/download/python/Python-${py_version}.tar.xz -T 5
 	tmp_size=$(du -b $python_src|awk '{print $1}')
 	if [ $tmp_size -lt 10703460 ];then
 		rm -f $python_src
