@@ -291,7 +291,7 @@ Download_Src() {
         rm -f GmSSL-master.zip
     fi
     
-    ######################################## 更新pcre-8.45版本 ###########################################
+    ################################### 更新pcre-8.45版本 ########################################
     pcre_version="8.45"
     wget -O pcre-8.45.zip https://nchc.dl.sourceforge.net/project/pcre/pcre/8.45/pcre-8.45.zip -T 20
     unzip -o pcre-8.45.zip
@@ -305,9 +305,9 @@ Download_Src() {
    #更新brotli
    git submodule update --init
    cd ..
-   ################################# brotli END ##############################################
+   ################################# brotli END ##################################################
 
-   ################################ 添加 ModSecurity-nginx ##############################################
+   ################################ 添加 ModSecurity-nginx ########################################
 # 下载 ModSecurity 源码最新稳定版本
 mkdir -p /www/server/nginx/owasp
 chown -R root:root /www/server/nginx/owasp
@@ -317,7 +317,7 @@ if [ ! -d "$modsecurity_dir" ]; then
     echo "ModSecurity 目录不存在，开始安装..."
     # 未检测到/usr/local/modsecurity说明未安装则运行以下命令安装ModSecurity
     cd /www/server/nginx/owasp
-    git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
+    git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity ModSecurity
     cd ModSecurity
     git submodule init
     git submodule update
@@ -330,40 +330,69 @@ if [ ! -d "$modsecurity_dir" ]; then
 else
     echo "ModSecurity 目录已存在，仅运行 git clone..."
     cd /www/server/nginx/owasp
-    git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
+    git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity ModSecurity
     mv /www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended /www/server/nginx/owasp/ModSecurity/modsecurity.conf
 fi
+
 # 进入 ModSecurity 源码目录
-cd /www/server/nginx/owasp
+cd /www/server/nginx/owasp/ModSecurity
+
 # 下载 ModSecurity-nginx 模块
 git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
-chown root:root -R /www/server/nginx/owasp/ModSecurity-nginx
+
+# 设置目录和文件的所有者为 root:root
+chown -R root:root /www/server/nginx/owasp/ModSecurity-nginx
+
+echo "ModSecurity 和 ModSecurity-nginx 安装及配置完成。"
 
 
-# OWASP核心规则集下载
-# 设置下载URL模板
+#################### OWASP核心规则集下载 ###########################################
 cd /www/server/nginx/owasp
 
 # GitHub 仓库及基础 URL
 REPO="coreruleset/coreruleset"
 BASE_URL="https://github.com/$REPO/archive"
+
 # 获取最新版本号
-LATEST_VERSION=$(curl --silent "https://api.github.com/repos/$REPO/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
+LATEST_VERSION=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
 if [ -z "$LATEST_VERSION" ]; then
     echo "无法获取最新版本号。请检查网络连接或稍后重试。"
     exit 1
 fi
+
 # 构建下载链接
 DOWNLOAD_URL="$BASE_URL/$LATEST_VERSION.tar.gz"
+
 # 下载最新版本
 echo "正在下载最新版本：$LATEST_VERSION"
-curl -L -o "coreruleset-$LATEST_VERSION.tar.gz" "$DOWNLOAD_URL"
-echo "下载完成：coreruleset-$LATEST_VERSION.tar.gz"
-tar -zxvf coreruleset-$LATEST_VERSION.tar.gz
-mv coreruleset-* owasp-rules
-chown root:root -R /www/server/nginx/owasp/owasp-rules
-cp /www/server/nginx/owasp/owasp-rules/crs-setup.conf.example /www/server/nginx/owasp/owasp-rules/crs-setup.conf
-rm -f coreruleset-$LATEST_VERSION.tar.gz
+if curl -L -o "coreruleset-$LATEST_VERSION.tar.gz" "$DOWNLOAD_URL"; then
+    echo "下载完成：coreruleset-$LATEST_VERSION.tar.gz"
+
+    # 解压文件
+    tar -zxvf "coreruleset-$LATEST_VERSION.tar.gz"
+
+    # 移动并重命名文件夹
+    if [ -d "coreruleset-$LATEST_VERSION" ]; then
+        mv "coreruleset-$LATEST_VERSION" "owasp-rules"
+
+        # 修改文件夹权限
+        chown -R root:root "owasp-rules"
+
+        # 复制文件（如果需要的话）
+        if [ -f "/www/server/nginx/owasp/owasp-rules/crs-setup.conf.example" ]; then
+            cp "/www/server/nginx/owasp/owasp-rules/crs-setup.conf.example" "/www/server/nginx/owasp/owasp-rules/crs-setup.conf"
+        fi
+
+        # 删除下载的压缩包（如果需要的话）
+        rm -f "coreruleset-$LATEST_VERSION.tar.gz"
+    else
+        echo "未能找到目录 coreruleset-$LATEST_VERSION，无法重命名。"
+    fi
+else
+    echo "下载最新版本 $LATEST_VERSION 失败。"
+    exit 1
+fi
+################### OWASP核心规则集下载-END##################
 
 # 创建引入文件
 # 修改配置文件名
