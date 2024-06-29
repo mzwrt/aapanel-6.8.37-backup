@@ -34,6 +34,44 @@ nginx.sh 使用方法：
 
      rm -f /www/server/panel/install/nginx.sh && wget -O /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
 
+支持版本：
+
+tengine='3.1.0'
+
+nginx_108='1.8.1'
+
+nginx_112='1.12.2'
+
+nginx_114='1.14.2'
+
+nginx_115='1.15.10'
+
+nginx_116='1.16.1'
+
+nginx_117='1.17.10'
+
+nginx_118='1.18.0'
+
+nginx_119='1.19.8'
+
+nginx_120='1.20.2'
+
+nginx_121='1.21.4'
+
+nginx_122='1.22.1'
+
+nginx_123='1.23.4'
+
+nginx_124='1.24.0'
+
+nginx_125='1.25.5' # 未测试是否可用
+
+nginx_126='1.26.1' # 未测试是否可用
+
+openresty='1.25.3.1'
+
+
+
 <br><br><br>
 
 # ModSecurity-nginx.sh
