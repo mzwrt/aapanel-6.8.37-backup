@@ -349,6 +349,8 @@ echo "ModSecurity 和 ModSecurity-nginx 安装及配置完成。"
 #################### OWASP核心规则集下载 ###########################################
 cd /www/server/nginx/owasp
 
+#!/bin/bash
+
 # 获取最新版本号
 LATEST_VERSION=$(curl -s "https://api.github.com/repos/coreruleset/coreruleset/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
 if [ -z "$LATEST_VERSION" ]; then
@@ -368,21 +370,22 @@ if curl -L -o "coreruleset-$LATEST_VERSION.tar.gz" "$DOWNLOAD_URL"; then
     tar -zxvf "coreruleset-$LATEST_VERSION.tar.gz"
 
     # 检查并重命名文件夹
-    if [ -d "coreruleset-$LATEST_VERSION" ]; then
-        mv "coreruleset-$LATEST_VERSION" "owasp-rules"
+    if [ -d "coreruleset-$LATEST_VERSION/util/virtual-patching" ]; then
+        mv "coreruleset-$LATEST_VERSION/util/virtual-patching" "owasp-rules"
 
         # 删除下载的压缩包
         rm -f "coreruleset-$LATEST_VERSION.tar.gz"
 
         echo "核心规则集已下载并重命名为 owasp-rules。"
     else
-        echo "未能找到目录 coreruleset-$LATEST_VERSION，无法重命名。"
+        echo "未能找到目录 coreruleset-$LATEST_VERSION/util/virtual-patching，无法重命名。"
         exit 1
     fi
 else
     echo "下载最新版本 $LATEST_VERSION 失败。"
     exit 1
 fi
+
 ################### OWASP核心规则集下载-END##################
 
 # 创建引入文件
