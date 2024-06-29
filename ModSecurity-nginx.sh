@@ -305,6 +305,7 @@ Download_Src() {
    #更新brotli
    git submodule update --init
    cd ..
+   ################################# brotli END ##############################################
 
    ################################ 添加 ModSecurity-nginx ##############################################
 # 下载 ModSecurity 源码最新稳定版本
@@ -334,7 +335,31 @@ fi
 cd /www/server/nginx/owasp
 # 下载 ModSecurity-nginx 模块
 git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
+
+
+# OWASP核心规则集下载
+# 设置下载URL模板
+cd /www/server/nginx/owasp
+
+# GitHub 仓库及基础 URL
+REPO="coreruleset/coreruleset"
+BASE_URL="https://github.com/$REPO/archive"
+# 获取最新版本号
+LATEST_VERSION=$(curl --silent "https://api.github.com/repos/$REPO/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
+if [ -z "$LATEST_VERSION" ]; then
+    echo "无法获取最新版本号。请检查网络连接或稍后重试。"
+    exit 1
+fi
+# 构建下载链接
+DOWNLOAD_URL="$BASE_URL/$LATEST_VERSION.tar.gz"
+# 下载最新版本
+echo "正在下载最新版本：$LATEST_VERSION"
+curl -L -o "coreruleset-$LATEST_VERSION.tar.gz" "$DOWNLOAD_URL"
+echo "下载完成：coreruleset-$LATEST_VERSION.tar.gz"
+tar -zxvf coreruleset-$LATEST_VERSION.tar.gz
+rm -f coreruleset-$LATEST_VERSION.tar.gz
 cd /www/server/nginx/src
+######################## ModSecurity END ################################
 
 
     wget -O ngx_cache_purge.tar.gz ${download_Url}/src/ngx_cache_purge-2.3.tar.gz
