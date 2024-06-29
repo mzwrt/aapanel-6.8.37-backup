@@ -311,7 +311,7 @@ Download_Src() {
 mkdir /www/server/nginx/owasp
 chown -R root:root /www/server/nginx/owasp
 modsecurity_dir="/usr/local/modsecurity"
-# 检查目录是否存在
+
 if [ ! -d "$modsecurity_dir" ]; then
     echo "ModSecurity 目录不存在，开始安装..."
     # 未检测到/usr/local/modsecurity说明未安装则运行以下命令安装ModSecurity
@@ -326,7 +326,9 @@ if [ ! -d "$modsecurity_dir" ]; then
     make
     sudo make install
 else
-    echo "ModSecurity 目录已存在，无需安装。"
+    echo "ModSecurity 目录已存在，仅运行 git clone..."
+    cd /www/server/nginx/owasp
+    git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
 fi
 # 进入 ModSecurity 源码目录
 cd /www/server/nginx/owasp
