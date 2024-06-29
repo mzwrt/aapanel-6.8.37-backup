@@ -304,6 +304,7 @@ Download_Src() {
    cd ngx_brotli
    #更新brotli
    git submodule update --init
+   cd ..
 
    ################################ 添加 ModSecurity-nginx ##############################################
 # 下载 ModSecurity 源码最新稳定版本
