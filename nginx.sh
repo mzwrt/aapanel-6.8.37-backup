@@ -300,6 +300,7 @@ Download_Src() {
    cd ngx_brotli
    #更新brotli
    git submodule update --init
+   cd /www/server/nginx/src
 
     wget -O ngx_cache_purge.tar.gz ${download_Url}/src/ngx_cache_purge-2.3.tar.gz
     tar -zxvf ngx_cache_purge.tar.gz
