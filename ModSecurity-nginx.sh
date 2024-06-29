@@ -308,7 +308,7 @@ Download_Src() {
 
    ################################ 添加 ModSecurity-nginx ##############################################
 # 下载 ModSecurity 源码最新稳定版本
-mkdir /www/server/nginx/owasp
+mkdir -p /www/server/nginx/owasp
 chown -R root:root /www/server/nginx/owasp
 modsecurity_dir="/usr/local/modsecurity"
 
