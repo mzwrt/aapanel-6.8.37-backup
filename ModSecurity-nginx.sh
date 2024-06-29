@@ -360,7 +360,7 @@ echo "正在下载最新版本：$LATEST_VERSION"
 curl -L -o "coreruleset-$LATEST_VERSION.tar.gz" "$DOWNLOAD_URL"
 echo "下载完成：coreruleset-$LATEST_VERSION.tar.gz"
 tar -zxvf coreruleset-$LATEST_VERSION.tar.gz
-mv coreruleset-$LATEST_VERSION owasp-rules
+mv coreruleset-* owasp-rules
 chown root:root -R /www/server/nginx/owasp/owasp-rules
 cp /www/server/nginx/owasp/owasp-rules/crs-setup.conf.example /www/server/nginx/owasp/owasp-rules/crs-setup.conf
 rm -f coreruleset-$LATEST_VERSION.tar.gz
