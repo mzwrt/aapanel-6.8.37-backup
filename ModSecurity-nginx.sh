@@ -326,15 +326,18 @@ if [ ! -d "$modsecurity_dir" ]; then
     ./configure
     make
     sudo make install
+    mv /www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended /www/server/nginx/owasp/ModSecurity/modsecurity.conf
 else
     echo "ModSecurity 目录已存在，仅运行 git clone..."
     cd /www/server/nginx/owasp
     git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
+    mv /www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended /www/server/nginx/owasp/ModSecurity/modsecurity.conf
 fi
 # 进入 ModSecurity 源码目录
 cd /www/server/nginx/owasp
 # 下载 ModSecurity-nginx 模块
 git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
+chown root:root -R /www/server/nginx/owasp/ModSecurity-nginx
 
 
 # OWASP核心规则集下载
@@ -357,7 +360,47 @@ echo "正在下载最新版本：$LATEST_VERSION"
 curl -L -o "coreruleset-$LATEST_VERSION.tar.gz" "$DOWNLOAD_URL"
 echo "下载完成：coreruleset-$LATEST_VERSION.tar.gz"
 tar -zxvf coreruleset-$LATEST_VERSION.tar.gz
+mv coreruleset-$LATEST_VERSION owasp-rules
+chown root:root -R /www/server/nginx/owasp/owasp-rules
+cp /www/server/nginx/owasp/owasp-rules/crs-setup.conf.example /www/server/nginx/owasp/owasp-rules/crs-setup.conf
 rm -f coreruleset-$LATEST_VERSION.tar.gz
+
+# 创建引入文件
+# 修改配置文件名
+mkdir -p /www/server/nginx/owasp/conf
+
+# 创建引入文件conf
+cat << EOF > /www/server/nginx/owasp/conf/main.conf
+# ModSecurity存放路径：/www/server/nginx/owasp/ModSecurity
+# 下载地址：https://github.com/SpiderLabs/ModSecurity
+#
+# ModSecurity-nginx这个是nginx连接器
+# 存放路径：/www/server/nginx/owasp/ModSecurity-nginx
+# 下载地址：https://github.com/SpiderLabs/ModSecurity-nginx
+#
+# OWASP CRS rules 规则文件都是下载的最版的
+# 存放文件在 /www/server/nginx/owasp/owasp-rules
+# 下载地址：https://github.com/coreruleset/coreruleset/releases
+
+# 引入modsecurity 主要配置文件
+Include /www/server/nginx/owasp/ModSecurity/modsecurity.conf
+
+# OWASP CRS 规则主要配置文件
+# Include /www/server/nginx/owasp/owasp-rules/crs-setup.conf
+
+# 引入 OWASP CRS 规则主文件
+# 所有规则文件都在 /www/server/nginx/owasp/owasp-rules 里面
+# 按照自己的需要添加规则，下面规则是全部添加
+# Include /www/server/nginx/owasp/owasp-rules/rules/*.conf
+
+# Other ModSecurity Rules
+EOF
+
+# 规范配置文件权限
+chmod 640 /www/server/nginx/owasp/ModSecurity/modsecurity.conf
+chmod 640 /www/server/nginx/owasp/owasp-rules/crs-setup.conf
+chmod 640 /www/server/nginx/owasp/conf/main.conf
+chmod 640 /www/server/nginx/owasp/owasp-rules/rules/*.conf
 cd /www/server/nginx/src
 ######################## ModSecurity END ################################
 
