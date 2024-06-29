@@ -371,10 +371,16 @@ if curl -L -o "coreruleset-$LATEST_VERSION.tar.gz" "$DOWNLOAD_URL"; then
     if [ -d "coreruleset-$LATEST_VERSION_NO_V" ]; then
         mv "coreruleset-$LATEST_VERSION_NO_V" "owasp-rules"
 
+        # 修改文件夹权限
+        chown -R root:root "owasp-rules"
+
+        # 复制文件（如果存在）
+        if [ -f "/www/server/nginx/owasp/owasp-rules/crs-setup.conf.example" ]; then
+            cp "/www/server/nginx/owasp/owasp-rules/crs-setup.conf.example" "/www/server/nginx/owasp/owasp-rules/crs-setup.conf"
+        fi
+
         # 删除下载的压缩包
         rm -f "coreruleset-$LATEST_VERSION.tar.gz"
-
-        echo "核心规则集已下载并重命名为 owasp-rules。"
     else
         echo "未能找到目录 coreruleset-$LATEST_VERSION_NO_V，无法重命名。"
         exit 1
