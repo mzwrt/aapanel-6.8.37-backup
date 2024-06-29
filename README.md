@@ -21,11 +21,12 @@
 默认只添加80,443,ssh端口和面板端口
 
 # nginx.sh 文件
+
+
 nginx.sh 基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，从nginx修改成OWASP WAF和去除nginx版本号
 
 文件是基于 debian 12 编写的兼容ubuntu系统
 
-ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖
 
 
 
@@ -34,7 +35,13 @@ nginx.sh 使用方法：
      rm -f /www/server/panel/install/nginx.sh && wget -O /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
 
 <br><br><br>
-ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS ），根据官方文档添加，模块是直接编译进去的非动态模块
+
+# ModSecurity-nginx.sh
+
+ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS ），根据官方文档添加，模块是直接编译进去的非动态模块，
+
+注意：ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖
+
 
 ModSecurity存放路径：/www/server/nginx/owasp/ModSecurity
 
