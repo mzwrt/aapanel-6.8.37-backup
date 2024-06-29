@@ -332,6 +332,7 @@ fi
 cd /www/server/nginx/owasp
 # 下载 ModSecurity-nginx 模块
 git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
+cd /www/server/nginx/src
 
 
     wget -O ngx_cache_purge.tar.gz ${download_Url}/src/ngx_cache_purge-2.3.tar.gz
