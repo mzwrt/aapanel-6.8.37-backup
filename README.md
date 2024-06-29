@@ -31,7 +31,7 @@ ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖
 
 nginx.sh 使用方法：
 
-     wget -O /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
+     rm -f /www/server/panel/install/nginx.sh && wget -O /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
 
 
 ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS ），根据官方文档添加，模块是直接编译进去的非动态模块
@@ -42,7 +42,7 @@ ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS �
 
 ModSecurity-nginx.sh 使用方法：
 
-     wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/ModSecurity-nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
+     rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/ModSecurity-nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
 
 
 注意修改命令尾部的版本号，默认安装 nginx 1.24
