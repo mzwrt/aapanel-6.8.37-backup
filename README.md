@@ -99,8 +99,9 @@ OWASP CRS rules 规则文件默认下载的最版
 
 下载地址：https://github.com/coreruleset/coreruleset/releases
 
-全局引入文件
-/www/server/nginx/owasp/conf/main.conf
+
+只需编辑这个文件即可
+全局引入文件路径： /www/server/nginx/owasp/conf/main.conf
 
 ModSecurity-nginx.sh 使用方法：
 
