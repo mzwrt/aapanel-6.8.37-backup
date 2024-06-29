@@ -287,7 +287,7 @@ Download_Src() {
     mv pcre-8.45 pcre
     rm -f pcre-8.45.zip
 
-   # ################################添加模块 ##############################################
+   # ################################ 添加brotli模块 ##############################################
    #下载brotli
    git clone https://github.com/google/ngx_brotli.git
    cd ngx_brotli
