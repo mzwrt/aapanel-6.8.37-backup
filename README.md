@@ -20,6 +20,34 @@
 
 默认只添加80,443,ssh端口和面板端口
 
+# nginx.sh 文件
+这个文件主要是基于官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，从nginx修改成OWASP WAF和去除nginx版本号
+
+使用方法：
+
+     wget -O -T 20 /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/nginx.sh && bash /www/server/panel/install/nginx.sh install 1.24
+
+注意修改命令尾部的版本号，默认安装 nginx 1.24
+
+支持版本：
+tengine='3.1.0'
+nginx_108='1.8.1'
+nginx_112='1.12.2'
+nginx_114='1.14.2'
+nginx_115='1.15.10'
+nginx_116='1.16.1'
+nginx_117='1.17.10'
+nginx_118='1.18.0'
+nginx_119='1.19.8'
+nginx_120='1.20.2'
+nginx_121='1.21.4'
+nginx_122='1.22.1'
+nginx_123='1.23.4'
+nginx_124='1.24.0'
+nginx_125='1.25.5'
+nginx_126='1.26.1'
+openresty='1.25.3.1'
+
 # 关于降级
 不建议高版本降级低版本，如果你真想降级，备份/www目录然后删除他重新安装即可
 
