@@ -378,7 +378,7 @@ cat << EOF > /www/server/nginx/owasp/conf/main.conf
 # 存放路径：/www/server/nginx/owasp/ModSecurity-nginx
 # 下载地址：https://github.com/SpiderLabs/ModSecurity-nginx
 #
-# OWASP CRS rules 规则文件都是下载的最版的
+# OWASP CRS rules 规则文件默认下载最版本
 # 存放文件在 /www/server/nginx/owasp/owasp-rules
 # 下载地址：https://github.com/coreruleset/coreruleset/releases
 
