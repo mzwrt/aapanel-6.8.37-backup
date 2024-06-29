@@ -53,7 +53,7 @@ ModSecurity-nginx这个是nginx连接器
 
 下载地址：https://github.com/SpiderLabs/ModSecurity-nginx
 
-OWASP CRS rules 规则文件都是下载的最版的
+OWASP CRS rules 规则文件默认下载的最版
 
 存放文件在 /www/server/nginx/owasp/owasp-rules
 
