@@ -349,33 +349,30 @@ echo "ModSecurity 和 ModSecurity-nginx 安装及配置完成。"
 #################### OWASP核心规则集下载 ###########################################
 cd /www/server/nginx/owasp
 
-# 下载最新版本的核心规则集（Core Rule Set）
+# 下载最新版本
 echo "正在下载最新版本：$LATEST_VERSION"
-DOWNLOAD_URL="https://github.com/coreruleset/coreruleset/archive/refs/tags/$LATEST_VERSION.tar.gz"
-
 if curl -L -o "coreruleset-$LATEST_VERSION.tar.gz" "$DOWNLOAD_URL"; then
     echo "下载完成：coreruleset-$LATEST_VERSION.tar.gz"
 
     # 解压文件
     tar -zxvf "coreruleset-$LATEST_VERSION.tar.gz"
 
-    # 检查并重命名文件夹
+    # 移动并重命名文件夹
     if [ -d "coreruleset-$LATEST_VERSION" ]; then
         mv "coreruleset-$LATEST_VERSION" "owasp-rules"
 
         # 修改文件夹权限
         chown -R root:root "owasp-rules"
 
-        # 复制文件（如果存在）
+        # 复制文件（如果需要的话）
         if [ -f "/www/server/nginx/owasp/owasp-rules/crs-setup.conf.example" ]; then
             cp "/www/server/nginx/owasp/owasp-rules/crs-setup.conf.example" "/www/server/nginx/owasp/owasp-rules/crs-setup.conf"
         fi
 
-        # 删除下载的压缩包
+        # 删除下载的压缩包（如果需要的话）
         rm -f "coreruleset-$LATEST_VERSION.tar.gz"
     else
         echo "未能找到目录 coreruleset-$LATEST_VERSION，无法重命名。"
-        exit 1
     fi
 else
     echo "下载最新版本 $LATEST_VERSION 失败。"
