@@ -3,6 +3,14 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 LANG=en_US.UTF-8
 
+######### 检测是否是root用户 ###################
+if [ "$(id -u)" -ne 0 ]; then
+  echo "此脚本需要以root用户运行。"
+  exit 1
+fi
+
+echo "你是以root用户运行此脚本。脚本继续运行"
+
 public_file=/www/server/panel/install/public.sh
 . $public_file
 publicFileMd5=$(md5sum ${public_file} 2>/dev/null|awk '{print $1}')
@@ -130,6 +138,9 @@ System_Lib() {
             apt install libx11-6 libx11-dev libx11-data -y
         fi
         apt-get update -y
+	########################### 安装ModSecurity必备软件包 ####################################################
+	apt install -y apt-utils autoconf automake build-essential git libcurl4-openssl-dev libgeoip-dev liblmdb-dev libtool libxml2-dev libyajl-dev pkgconf wget zlib1g-dev
+ 
         Pack="gcc g++ libgd3 libgd-dev libevent-dev libncurses5-dev libreadline-dev uuid-dev"
         ${PM} install ${Pack} -y
         apt-get install libxslt1-dev -y 2>&1 >> /tmp/pack_i.pl
@@ -297,6 +308,7 @@ Download_Src() {
    ################################ 添加 ModSecurity-nginx ##############################################
 # 下载 ModSecurity 源码最新稳定版本
 mkdir /www/server/nginx/owasp
+chown -R root:root /www/server/nginx/owasp
 modsecurity_dir="/usr/local/modsecurity"
 # 检查目录是否存在
 if [ ! -d "$modsecurity_dir" ]; then
