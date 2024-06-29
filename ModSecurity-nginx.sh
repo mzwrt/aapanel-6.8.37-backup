@@ -335,7 +335,7 @@ else
 fi
 
 # 进入 ModSecurity 源码目录
-cd /www/server/nginx/owasp/ModSecurity
+cd /www/server/nginx/owasp
 
 # 下载 ModSecurity-nginx 模块
 git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
