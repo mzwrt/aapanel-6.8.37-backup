@@ -25,7 +25,7 @@
 
 使用方法：
 
-     wget -O -T 20 /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/nginx.sh && bash /www/server/panel/install/nginx.sh install 1.24
+     wget -O /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
 
 注意修改命令尾部的版本号，默认安装 nginx 1.24
 
