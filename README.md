@@ -23,6 +23,9 @@
 # nginx.sh 文件
 nginx.sh 基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，从nginx修改成OWASP WAF和去除nginx版本号
 
+文件是基于 debian 12 编写的兼容ubuntu系统
+
+ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖
 
 
 
