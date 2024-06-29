@@ -33,12 +33,27 @@ nginx.sh 使用方法：
 
      rm -f /www/server/panel/install/nginx.sh && wget -O /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
 
-
+<br><br><br>
 ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS ），根据官方文档添加，模块是直接编译进去的非动态模块
 
-文件路径：/www/server/nginx/owasp
+ModSecurity存放路径：/www/server/nginx/owasp/ModSecurity
 
-无需重复加载加载 Nginx ModSecurity 连接器，默认已经加载模块
+下载地址：https://github.com/SpiderLabs/ModSecurity
+
+ModSecurity-nginx这个是nginx连接器
+
+存放路径：/www/server/nginx/owasp/ModSecurity-nginx
+
+下载地址：https://github.com/SpiderLabs/ModSecurity-nginx
+
+OWASP CRS rules 规则文件都是下载的最版的
+
+存放文件在 /www/server/nginx/owasp/owasp-rules
+
+下载地址：https://github.com/coreruleset/coreruleset/releases
+
+全局引入文件
+/www/server/nginx/owasp/conf/main.conf
 
 ModSecurity-nginx.sh 使用方法：
 
