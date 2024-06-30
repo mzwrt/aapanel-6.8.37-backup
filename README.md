@@ -82,6 +82,10 @@ ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS �
 
 注意：ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖
 
+ModSecurity-nginx.sh 使用方法：
+
+     rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/ModSecurity-nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
+
 
 ModSecurity存放路径：/www/server/nginx/owasp/ModSecurity
 
@@ -101,16 +105,24 @@ OWASP CRS rules 规则文件默认下载的最版
 
 ####使用说明####
 
-在nginx.conf文件添加引入。将以下代码添加在worker_rlimit_nofile 51200;下面即可引入
+根据<a href="https://www.netnea.com/cms/nginx-tutorial-6_embedding-modsecurity/" >官方文档</a>步骤五在nginx.conf文件添加引入。将以下代码添加在worker_rlimit_nofile 51200;下面即可引入
 
      load_module /www/server/nginx/modules/ngx_http_modsecurity_module.so;
+
+根据<a href="https://www.netnea.com/cms/nginx-tutorial-6_embedding-modsecurity/" >官方文档</a>骤5建议在http模块内添加以下代码全局开启
+
+     modsecurity on;
+
 
 编辑规则全局引入文件。这里面可以引入你需要的规则
 文件路径： /www/server/nginx/owasp/conf/main.conf
 
-ModSecurity-nginx.sh 使用方法：
+在你的网站配置文件内添加以下代码
 
-     rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/ModSecurity-nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
+     modsecurity on;
+     modsecurity_rules_file /www/server/nginx/owasp/conf/main.conf;
+
+然后编辑/www/server/nginx/owasp/conf/main.conf文件在里面引入你需要的规则文件即可，所有国则文件都在/www/server/nginx/owasp/owasp-rules/rules里面
 
 
 注意修改命令尾部的版本号，默认安装 nginx 1.24
