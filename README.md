@@ -78,6 +78,17 @@ openresty='1.25.3.1'
 
 # ModSecurity-nginx.sh
 
+删除弃用的ipv6
+
+删除自带的webdav模块 ${ENABLE_WEBDAV}
+
+添加优化参数 --with-threads --with-file-aio  --with-cc-opt='-O2 -fPIE --param=ssp-buffer-size=4 -fstack-protector -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-E -Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now'
+
+添加ngx_brotli模块 --add-module=/www/server/nginx/src/ngx_brotli
+
+添加ModSecurity-nginx静态模块 --add-module=/www/server/nginx/owasp/ModSecurity-nginx 如果需要编译成动态模块修改成 --add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx 动态模块需要根据官方文档引入.so文件
+   
+
 ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS ），根据官方文档添加
 
 注意：ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖
@@ -105,7 +116,7 @@ OWASP CRS rules 规则文件默认下载的最版
 
 ####使用说明####
 
-根据<a href="https://www.netnea.com/cms/nginx-tutorial-6_embedding-modsecurity/"  target="_blank">官方文档</a>步骤五在nginx.conf文件添加引入。将以下代码添加在worker_rlimit_nofile 51200;下面即可引入
+【【【默认会编译成静态模块下面这句无需添加，只有编译成动态模块时候才会需要引入.so文件】】】根据<a href="https://www.netnea.com/cms/nginx-tutorial-6_embedding-modsecurity/"  target="_blank">官方文档</a>步骤五在nginx.conf文件添加引入。将以下代码添加在worker_rlimit_nofile 51200;下面即可引入
 
      load_module /www/server/nginx/modules/ngx_http_modsecurity_module.so;
 
