@@ -86,7 +86,7 @@ openresty='1.25.3.1'
 
 添加ngx_brotli模块 --add-module=/www/server/nginx/src/ngx_brotli
 
-添加ModSecurity-nginx静态模块 --add-module=/www/server/nginx/owasp/ModSecurity-nginx 如果需要编译成动态模块修改成 --add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx 动态模块需要根据官方文档引入.so文件
+添加ModSecurity-nginx静态模块 --add-module=/www/server/nginx/owasp/ModSecurity-nginx 如果需要编译成动态模块修改成 --add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx 动态模块需要根据官方文档引入.so文件，请详细观看下面的使用说明
    
 
 ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS ），根据官方文档添加
