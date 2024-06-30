@@ -78,7 +78,7 @@ openresty='1.25.3.1'
 
 # ModSecurity-nginx.sh
 
-ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS ），根据官方文档添加，模块是直接编译进去的非动态模块，
+ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS ），根据官方文档添加
 
 注意：ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖
 
@@ -99,9 +99,14 @@ OWASP CRS rules 规则文件默认下载的最版
 
 下载地址：https://github.com/coreruleset/coreruleset/releases
 
+####使用说明####
 
-只需编辑这个文件即可
-全局引入文件路径： /www/server/nginx/owasp/conf/main.conf
+在nginx.conf文件添加引入。将以下代码添加在worker_rlimit_nofile 51200;下面即可引入
+
+     load_module /www/server/nginx/modules/ngx_http_modsecurity_module.so;
+
+编辑规则全局引入文件。这里面可以引入你需要的规则
+文件路径： /www/server/nginx/owasp/conf/main.conf
 
 ModSecurity-nginx.sh 使用方法：
 
