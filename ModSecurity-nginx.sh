@@ -346,7 +346,10 @@ chown -R root:root /www/server/nginx/owasp/ModSecurity-nginx
 # 编译动态模块
 cd /www/server/nginx/src
 ./configure --prefix=/www/server/nginx/src --with-http_ssl_module --with-threads --with-file-aio  --with-cc-opt='-O2 -fPIE -fPIC --param=ssp-buffer-size=4 -fstack-protector -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-E -Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now' --with-compat --add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx
-mkdir -p /www/server/nginx/modules
+make
+make install
+make modules
+[ ! -d /www/server/nginx/modules ] && mkdir /www/server/nginx/modules
 cp -r /www/server/nginx/src/objs/ngx_http_modsecurity_module.so /www/server/nginx/modules
 make clean
 
