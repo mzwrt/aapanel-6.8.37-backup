@@ -105,11 +105,11 @@ OWASP CRS rules 规则文件默认下载的最版
 
 ####使用说明####
 
-根据<a href="https://www.netnea.com/cms/nginx-tutorial-6_embedding-modsecurity/" >官方文档</a>步骤五在nginx.conf文件添加引入。将以下代码添加在worker_rlimit_nofile 51200;下面即可引入
+根据<a href="https://www.netnea.com/cms/nginx-tutorial-6_embedding-modsecurity/"  target="_blank">官方文档</a>步骤五在nginx.conf文件添加引入。将以下代码添加在worker_rlimit_nofile 51200;下面即可引入
 
      load_module /www/server/nginx/modules/ngx_http_modsecurity_module.so;
 
-根据<a href="https://www.netnea.com/cms/nginx-tutorial-6_embedding-modsecurity/" >官方文档</a>骤5建议在http模块内添加以下代码全局开启
+根据<a href="https://www.netnea.com/cms/nginx-tutorial-6_embedding-modsecurity/"  target="_blank">官方文档</a>骤5建议在http模块内添加以下代码全局开启
 
      modsecurity on;
 
