@@ -343,6 +343,13 @@ git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
 # 设置目录和文件的所有者为 root:root
 chown -R root:root /www/server/nginx/owasp/ModSecurity-nginx
 
+# 编译动态模块
+cd /www/server/nginx/src
+./configure --prefix=/www/server/nginx/src --with-http_ssl_module --with-threads --with-file-aio  --with-cc-opt='-O2 -fPIE -fPIC --param=ssp-buffer-size=4 -fstack-protector -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-E -Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now' --with-compat --add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx
+mkdir -p /www/server/nginx/modules
+cp -r /www/server/nginx/src/objs/ngx_http_modsecurity_module.so /www/server/nginx/modules
+make clean
+
 echo "ModSecurity 和 ModSecurity-nginx 安装及配置完成。"
 
 
@@ -422,7 +429,9 @@ Include /www/server/nginx/owasp/ModSecurity/modsecurity.conf
 # Other ModSecurity Rules
 EOF
 
-# 规范配置文件权限
+# 规范文件权限
+chmod 750 /www/server/nginx/modules
+chmod 640 /www/server/nginx/modules/ngx_http_modsecurity_module.so
 chmod 640 /www/server/nginx/owasp/ModSecurity/modsecurity.conf
 chmod 640 /www/server/nginx/owasp/owasp-rules/crs-setup.conf
 chmod 640 /www/server/nginx/owasp/conf/main.conf
@@ -552,13 +561,15 @@ Install_Configure() {
     export LUAJIT_INC=/usr/local/include/${LUAJIT_INC_PATH}/
     export LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH
 
+    # 规范文件权限防止出现无效用户文件
+    # 因为宝塔文件设置并不严谨必须修改
+    chown -R root:root /www/server/nginx/src
+
     # 删除弃用的ipv6
     # 删除自带的webdav模块 ${ENABLE_WEBDAV}
     # 添加优化参数 --with-threads --with-file-aio  --with-cc-opt='-O2 -fPIE --param=ssp-buffer-size=4 -fstack-protector -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-E -Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now'
     # 添加ngx_brotli模块 --add-module=/www/server/nginx/src/ngx_brotli
-    # 添加ModSecurity-nginx模块 --add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx
-    # 添加-fPIC 不添加ModSecurity-nginx编译时报错
-    ./configure --user=www --group=www --with-threads --with-file-aio  --with-cc-opt='-O2 -fPIE -fPIC --param=ssp-buffer-size=4 -fstack-protector -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-E -Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now' --prefix=${Setup_Path} ${ENABLE_LUA} --add-module=${Setup_Path}/src/ngx_cache_purge ${ENABLE_STICKY} --with-openssl=${Setup_Path}/src/openssl --with-pcre=pcre ${ENABLE_HTTP2} --with-http_stub_status_module --with-http_ssl_module --with-http_image_filter_module --with-http_gzip_static_module --with-http_gunzip_module --with-http_sub_module --with-http_flv_module --with-http_addition_module --with-http_realip_module --with-http_mp4_module --add-module=${Setup_Path}/src/ngx_http_substitutions_filter_module-master --add-module=/www/server/nginx/src/ngx_brotli --add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx ${jemallocLD} ${ENABLE_NGX_PAGESPEED} ${ENABLE_HTTP3} ${ADD_EXTENSION} ${i_make_args} 2>&1|tee /tmp/nginx_config.pl
+    ./configure --user=www --group=www --with-threads --with-file-aio  --with-cc-opt='-O2 -fPIE --param=ssp-buffer-size=4 -fstack-protector -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-E -Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now' --prefix=${Setup_Path} ${ENABLE_LUA} --add-module=${Setup_Path}/src/ngx_cache_purge ${ENABLE_STICKY} --with-openssl=${Setup_Path}/src/openssl --with-pcre=pcre ${ENABLE_HTTP2} --with-http_stub_status_module --with-http_ssl_module --with-http_image_filter_module --with-http_gzip_static_module --with-http_gunzip_module --with-http_sub_module --with-http_flv_module --with-http_addition_module --with-http_realip_module --with-http_mp4_module --add-module=${Setup_Path}/src/ngx_http_substitutions_filter_module-master --add-module=/www/server/nginx/src/ngx_brotli ${jemallocLD} ${ENABLE_NGX_PAGESPEED} ${ENABLE_HTTP3} ${ADD_EXTENSION} ${i_make_args} 2>&1|tee /tmp/nginx_config.pl
     make -j${cpuCore} 2>&1|tee /tmp/nginx_make.pl
 }
 Install_Nginx() {
