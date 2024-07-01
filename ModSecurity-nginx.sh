@@ -395,6 +395,10 @@ fi
 # 修改配置文件名
 mkdir -p /www/server/nginx/owasp/conf
 
+# 添加wordpress常用的nginx拒绝规则配置文件
+wget -c -O https://gist.githubusercontent.com/nfsarmento/57db5abba08b315b67f174cd178bea88/raw/b0768871c3349fdaf549a24268cb01b2be145a6a/nginx-wordpress.conf -T 20
+
+
 # 创建引入文件conf
 cat << EOF > /www/server/nginx/owasp/conf/main.conf
 # ModSecurity存放路径：/www/server/nginx/owasp/ModSecurity
@@ -416,7 +420,8 @@ Include /www/server/nginx/owasp/ModSecurity/modsecurity.conf
 
 # 引入 OWASP CRS 规则主文件
 # 所有规则文件都在 /www/server/nginx/owasp/owasp-rules 里面
-# 按照自己的需要添加规则，下面规则是全部添加
+# 按照自己的需要添加规则，下面规则是根据官方文档添加所有conf规则
+# 注意/www/server/nginx/owasp/owasp-rules/rules/*.conf不可用于生产环境
 # Include /www/server/nginx/owasp/owasp-rules/rules/*.conf
 
 # Other ModSecurity Rules
@@ -428,6 +433,7 @@ chmod 640 /www/server/nginx/modules/ngx_http_modsecurity_module.so
 chmod 640 /www/server/nginx/owasp/ModSecurity/modsecurity.conf
 chmod 640 /www/server/nginx/owasp/owasp-rules/crs-setup.conf
 chmod 640 /www/server/nginx/owasp/conf/main.conf
+chmod 640 /www/server/nginx/owasp/conf/nginx-wordpress.conf
 chmod 640 /www/server/nginx/owasp/owasp-rules/rules/*.conf
 cd /www/server/nginx/src
 ######################## ModSecurity END ################################
