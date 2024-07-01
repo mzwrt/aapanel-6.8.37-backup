@@ -80,7 +80,7 @@ openresty='1.25.3.1'
 
 ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS ），根据官方文档添加
 
-修复nginx未知用户文件夹
+修复/www/server/nginx/src里面的未知用户文件夹
 
 添加对于wordpress一些常用拒绝规则的配置文件，存放路径：/www/server/nginx/owasp/conf/nginx-wordpress.conf
 
