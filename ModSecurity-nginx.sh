@@ -562,6 +562,8 @@ Install_Configure() {
 
     # 规范文件权限防止出现无效用户文件
     # 因为宝塔文件设置并不严谨必须修改
+    # 根据CIS NGINX 基准测试v2.1.0的2.3.1
+    # 将所有权仅设置为 root 组和 root 用户中的用户将减少对 nginx 配置文件进行未经授权修改的可能性。
     chown -R root:root /www/server/nginx/src
 
     # 删除弃用的ipv6
