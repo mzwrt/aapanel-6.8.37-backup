@@ -120,7 +120,9 @@ OWASP CRS rules 规则文件默认下载的最版
 
 ####使用说明####
 
-【【【默认会编译成静态模块下面这句无需添加，只有编译成动态模块时候才会需要引入.so文件】】】根据<a href="https://www.netnea.com/cms/nginx-tutorial-6_embedding-modsecurity/"  target="_blank">官方文档</a>步骤五在nginx.conf文件添加引入。将以下代码添加在worker_rlimit_nofile 51200;下面即可引入
+【【【默认会编译成静态模块下面这句无需添加，只有编译成动态模块时候才会需要引入.so文件】】】
+
+根据<a href="https://www.netnea.com/cms/nginx-tutorial-6_embedding-modsecurity/"  target="_blank">官方文档</a>步骤五在nginx.conf文件添加引入。将以下代码添加在worker_rlimit_nofile 51200;下面即可引入
 
      load_module /www/server/nginx/modules/ngx_http_modsecurity_module.so;
 
