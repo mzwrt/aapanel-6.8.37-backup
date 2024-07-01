@@ -711,6 +711,8 @@ Install_Nginx() {
 
         wget -c -O lua-resty-lrucache-0.13.zip ${download_Url}/src/lua-resty-lrucache-0.13.zip
         unzip lua-resty-lrucache-0.13.zip
+	# 修复残留文件lua-resty-lrucache-0.13.zip
+	rm -f lua-resty-lrucache-0.13.zip
         cd lua-resty-lrucache-0.13
         make install PREFIX=/www/server/nginx
         cd ..
@@ -758,6 +760,8 @@ Update_Nginx() {
     
             wget -c -O lua-resty-lrucache-0.13.zip ${download_Url}/src/lua-resty-lrucache-0.13.zip
             unzip lua-resty-lrucache-0.13.zip
+	    # 修复残留文件lua-resty-lrucache-0.13.zip
+	    rm -f lua-resty-lrucache-0.13.zip
             cd lua-resty-lrucache-0.13
             make install PREFIX=/www/server/nginx
             cd ..
