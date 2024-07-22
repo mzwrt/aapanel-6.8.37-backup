@@ -317,6 +317,11 @@ if [ ! -d "$modsecurity_dir" ]; then
     echo "ModSecurity 目录不存在，开始安装..."
     # 未检测到/usr/local/modsecurity说明未安装则运行以下命令安装ModSecurity
     cd /www/server/nginx/owasp
+    # 安装libmaxminddb-dev解决以下错误
+    # configure: MaxMind library was not found
+    #c onfigure: Nothing about LMDB was informed during the configure phase. Trying to detect it on the platform...
+    # configure: LMDB is disabled by default.
+    sudo apt-get install libmaxminddb-dev
     git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity ModSecurity
     cd ModSecurity
     git submodule init
