@@ -435,12 +435,12 @@ EOF
 # 规范文件权限
 chmod 750 /www/server/nginx/modules
 chmod 640 /www/server/nginx/modules/ngx_http_modsecurity_module.so
-chmod 640 /www/server/nginx/owasp/ModSecurity/modsecurity.conf
-chmod 640 /www/server/nginx/owasp/owasp-rules/crs-setup.conf
-chmod 640 /www/server/nginx/owasp/conf/main.conf
-chmod 640 /www/server/nginx/owasp/conf/nginx-wordpress.conf
-chmod 640 /www/server/nginx/owasp/owasp-rules/rules/*.conf
-find /www/server/nginx/owasp/owasp-rules/ -type f -exec chmod 640 {} \;
+chmod 600 /www/server/nginx/owasp/ModSecurity/modsecurity.conf
+chmod 600 /www/server/nginx/owasp/owasp-rules/crs-setup.conf
+chmod 600 /www/server/nginx/owasp/conf/main.conf
+chmod 600 /www/server/nginx/owasp/conf/nginx-wordpress.conf
+chmod 600 /www/server/nginx/owasp/owasp-rules/rules/*.conf
+find /www/server/nginx/owasp/owasp-rules/ -type f -exec chmod 600 {} \;
 cd /www/server/nginx/src
 ######################## ModSecurity END ################################
 
