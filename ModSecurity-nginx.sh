@@ -440,6 +440,7 @@ chmod 640 /www/server/nginx/owasp/owasp-rules/crs-setup.conf
 chmod 640 /www/server/nginx/owasp/conf/main.conf
 chmod 640 /www/server/nginx/owasp/conf/nginx-wordpress.conf
 chmod 640 /www/server/nginx/owasp/owasp-rules/rules/*.conf
+find /www/server/nginx/owasp/owasp-rules/ -type f -exec chmod 640 {} \;
 cd /www/server/nginx/src
 ######################## ModSecurity END ################################
 
