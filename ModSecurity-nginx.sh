@@ -264,6 +264,12 @@ Download_Src() {
 
     sed -i 's/static u_char ngx_http_server_full_string\[] = "Server: " NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
 
+    sed -i 's/#define NGINX_VERSION      "1\.24\.0"/#define NGINX_VERSION      "5.1.24"/' /www/server/nginx/src/src/core/nginx.h
+
+    sed -i 's/#define NGINX_VERSION      ".*"/#define NGINX_VERSION      "5.1.24"/' /www/server/nginx/src/src/core/nginx.h
+
+    
+
     sed -i 's/static u_char ngx_http_server_build_string\[] = "Server: " NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
     fi
 
