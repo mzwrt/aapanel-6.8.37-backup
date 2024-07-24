@@ -8,8 +8,10 @@ if [ "$(id -u)" -ne 0 ]; then
   echo "此脚本需要以root用户运行。"
   exit 1
 fi
-
 echo "你是以root用户运行此脚本。脚本继续运行"
+
+read -p "请输入将nginx伪装成什么名字（例如：OWASP WAF） 留空将不修改使用默认值 默认值是ngixn： " nginx_fake_name
+read -p "请输入自定义的nginx版本号（例如：5.1.24）  留空将不修改使用默认版本号： " nginx_version_number
 
 public_file=/www/server/panel/install/public.sh
 . $public_file
@@ -248,35 +250,85 @@ Download_Src() {
         wget -O ${Setup_Path}/src.tar.gz ${download_Url}/src/${version}-${nginxVersion}.tar.gz -T20
         tar -xvf src.tar.gz
         mv ${version}-${nginxVersion} src
-            ################################# 替换nginx版本信息 【彻底隐藏nginx】替换错误页nginx名称和版本增加安全性 #################################################################
-    # 下面三个是HTTP响应头 server：参数，根据CIS安全基准只修改以下三个参数即可通过，后面六个是彻底隐藏nginx修改为：OWASP WAF，版本号修改为：5.1.24
-    sed -i 's/static u_char ngx_http_server_string\[] = "Server: nginx" CRLF;/static u_char ngx_http_server_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-    sed -i 's/static u_char ngx_http_server_full_string\[] = "Server: " NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-        sed -i 's/static u_char ngx_http_server_build_string\[] = "Server: " NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-    ### 下面三个是默认错误页的底部标签
-    sed -i 's/<hr><center>" NGINX_VER_BUILD "<\/center>" CRLF/<hr><center>" OWASP WAF "<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
-    sed -i 's/<hr><center>nginx<\/center>" CRLF/<hr><center>OWASP WAF<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
-    sed -i 's/<hr><center>" NGINX_VER "<\/center>" CRLF/<hr><center>" OWASP WAF "<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
-    ### 下面两个是修改整体宏标签，编译时调用的标签 ######################
-    sed -i 's/#define NGINX_VERSION      ".*"/#define NGINX_VERSION      "5.1.24"/' /www/server/nginx/src/src/core/nginx.h
-    sed -i 's/#define NGINX_VER          "nginx\/" NGINX_VERSION/#define NGINX_VER          "OWASP WAF"/' /www/server/nginx/src/src/core/nginx.h
+########################### 替换 Nginx 版本信息和错误页标签#######################################
+if [ -n "$nginx_fake_name" ] || [ -n "$nginx_version_number" ]; then
+    # 替换 HTTP 响应头的 server 参数
+    if [ -n "$nginx_fake_name" ]; then
+        sed -i "s/static u_char ngx_http_server_string\[] = \"Server: nginx\" CRLF;/static u_char ngx_http_server_string\[] = \"Server: $nginx_fake_name\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_full_string\[] = \"Server: \" NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[] = \"Server: $nginx_fake_name\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_build_string\[] = \"Server: \" NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[] = \"Server: $nginx_fake_name\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+    fi
+
+    # 替换 默认错误页的底部标签
+    if [ -n "$nginx_fake_name" ]; then
+        sed -i "s/<hr><center>\" NGINX_VER_BUILD \"<\/center>\" CRLF/<hr><center>\" $nginx_fake_name \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+        sed -i "s/<hr><center>nginx<\/center>\" CRLF/<hr><center>$nginx_fake_name<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+        sed -i "s/<hr><center>\" NGINX_VER \"<\/center>\" CRLF/<hr><center>\" $nginx_fake_name \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+    fi
+
+    # 替换 整体宏标签
+    if [ -n "$nginx_version_number" ]; then
+        sed -i "s/#define NGINX_VERSION      \".*\"/#define NGINX_VERSION      \"$nginx_version_number\"/" /www/server/nginx/src/src/core/nginx.h
+    fi
+
+    if [ -n "$nginx_fake_name" ]; then
+        sed -i "s/#define NGINX_VER          \"nginx\/\" NGINX_VERSION/#define NGINX_VER          \"$nginx_fake_name\"/" /www/server/nginx/src/src/core/nginx.h
+    fi
+
+    # 输出替换结果
+    if [ -n "$nginx_fake_name" ]; then
+        echo "Nginx 伪装名称已设置为: $nginx_fake_name"
+    fi
+
+    if [ -n "$nginx_version_number" ]; then
+        echo "自定义版本号已设置为: $nginx_version_number"
+    fi
+else
+    echo "未输入任何修改信息，文件未做任何更改。"
+fi
+################################### 替换nginx信息 EMD #######################################################
     else
         wget -O ${Setup_Path}/src.tar.gz ${download_Url}/src/nginx-${nginxVersion}.tar.gz -T20
         tar -xvf src.tar.gz
         tar -xvf src.tar.gz
         mv nginx-${nginxVersion} src
-           ################################# 替换nginx版本信息 【彻底隐藏nginx】替换错误页nginx名称和版本增加安全性 #################################################################
-    # 下面三个是HTTP响应头 server：参数，根据CIS安全基准只修改以下三个参数即可通过，后面六个是彻底隐藏nginx修改为：OWASP WAF，版本号修改为：5.1.24
-    sed -i 's/static u_char ngx_http_server_string\[] = "Server: nginx" CRLF;/static u_char ngx_http_server_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-    sed -i 's/static u_char ngx_http_server_full_string\[] = "Server: " NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-        sed -i 's/static u_char ngx_http_server_build_string\[] = "Server: " NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-    ### 下面三个是默认错误页的底部标签
-    sed -i 's/<hr><center>" NGINX_VER_BUILD "<\/center>" CRLF/<hr><center>" OWASP WAF "<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
-    sed -i 's/<hr><center>nginx<\/center>" CRLF/<hr><center>OWASP WAF<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
-    sed -i 's/<hr><center>" NGINX_VER "<\/center>" CRLF/<hr><center>" OWASP WAF "<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
-    ### 下面两个是修改整体宏标签，编译时调用的标签 ######################
-    sed -i 's/#define NGINX_VERSION      ".*"/#define NGINX_VERSION      "5.1.24"/' /www/server/nginx/src/src/core/nginx.h
-    sed -i 's/#define NGINX_VER          "nginx\/" NGINX_VERSION/#define NGINX_VER          "OWASP WAF"/' /www/server/nginx/src/src/core/nginx.h
+########################### 替换 Nginx 版本信息和错误页标签#######################################
+if [ -n "$nginx_fake_name" ] || [ -n "$nginx_version_number" ]; then
+    # 替换 HTTP 响应头的 server 参数
+    if [ -n "$nginx_fake_name" ]; then
+        sed -i "s/static u_char ngx_http_server_string\[] = \"Server: nginx\" CRLF;/static u_char ngx_http_server_string\[] = \"Server: $nginx_fake_name\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_full_string\[] = \"Server: \" NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[] = \"Server: $nginx_fake_name\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_build_string\[] = \"Server: \" NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[] = \"Server: $nginx_fake_name\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+    fi
+
+    # 替换 默认错误页的底部标签
+    if [ -n "$nginx_fake_name" ]; then
+        sed -i "s/<hr><center>\" NGINX_VER_BUILD \"<\/center>\" CRLF/<hr><center>\" $nginx_fake_name \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+        sed -i "s/<hr><center>nginx<\/center>\" CRLF/<hr><center>$nginx_fake_name<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+        sed -i "s/<hr><center>\" NGINX_VER \"<\/center>\" CRLF/<hr><center>\" $nginx_fake_name \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+    fi
+
+    # 替换 整体宏标签
+    if [ -n "$nginx_version_number" ]; then
+        sed -i "s/#define NGINX_VERSION      \".*\"/#define NGINX_VERSION      \"$nginx_version_number\"/" /www/server/nginx/src/src/core/nginx.h
+    fi
+
+    if [ -n "$nginx_fake_name" ]; then
+        sed -i "s/#define NGINX_VER          \"nginx\/\" NGINX_VERSION/#define NGINX_VER          \"$nginx_fake_name\"/" /www/server/nginx/src/src/core/nginx.h
+    fi
+
+    # 输出替换结果
+    if [ -n "$nginx_fake_name" ]; then
+        echo "Nginx 伪装名称已设置为: $nginx_fake_name"
+    fi
+
+    if [ -n "$nginx_version_number" ]; then
+        echo "自定义版本号已设置为: $nginx_version_number"
+    fi
+else
+    echo "未输入任何修改信息，文件未做任何更改。"
+fi
+################################### 替换nginx信息 EMD #######################################################
     fi
 
     cd src
