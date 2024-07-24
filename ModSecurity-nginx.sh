@@ -261,15 +261,12 @@ Download_Src() {
         mv nginx-${nginxVersion} src
             ################################# 替换nginx版本信息 替换错误页nginx名称和版本增加安全性 #################################################################
     sed -i 's/static u_char ngx_http_server_string\[] = "Server: nginx" CRLF;/static u_char ngx_http_server_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-
     sed -i 's/static u_char ngx_http_server_full_string\[] = "Server: " NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-
     sed -i 's/#define NGINX_VERSION      "1\.24\.0"/#define NGINX_VERSION      "5.1.24"/' /www/server/nginx/src/src/core/nginx.h
-
     sed -i 's/#define NGINX_VERSION      ".*"/#define NGINX_VERSION      "5.1.24"/' /www/server/nginx/src/src/core/nginx.h
-
-    
-
+    sed -i 's/<hr><center>" NGINX_VER "<\/center>" CRLF/<hr><center>" OWASP WAF "<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
+    sed -i 's/<hr><center>" NGINX_VER_BUILD "<\/center>" CRLF/<hr><center>" OWASP WAF "<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
+    sed -i 's/<hr><center>nginx<\/center>" CRLF/<hr><center>OWASP WAF<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
     sed -i 's/static u_char ngx_http_server_build_string\[] = "Server: " NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
     fi
 
