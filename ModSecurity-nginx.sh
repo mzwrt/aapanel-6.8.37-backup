@@ -248,12 +248,18 @@ Download_Src() {
         wget -O ${Setup_Path}/src.tar.gz ${download_Url}/src/${version}-${nginxVersion}.tar.gz -T20
         tar -xvf src.tar.gz
         mv ${version}-${nginxVersion} src
-            ################################# 替换nginx版本信息 替换错误页nginx名称和版本增加安全性 #################################################################
+            ################################# 替换nginx版本信息 【彻底隐藏nginx】替换错误页nginx名称和版本增加安全性 #################################################################
+    # 下面三个是HTTP响应头 server：参数，根据CIS安全基准只修改以下三个参数即可通过，后面六个是彻底隐藏nginx修改为：OWASP WAF，版本号修改为：5.1.24
     sed -i 's/static u_char ngx_http_server_string\[] = "Server: nginx" CRLF;/static u_char ngx_http_server_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-
     sed -i 's/static u_char ngx_http_server_full_string\[] = "Server: " NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-
-    sed -i 's/static u_char ngx_http_server_build_string\[] = "Server: " NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i 's/static u_char ngx_http_server_build_string\[] = "Server: " NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[] = "Server: OWASP WAF" CRLF;/g' /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+    ### 下面三个是默认错误页的底部标签
+    sed -i 's/<hr><center>" NGINX_VER_BUILD "<\/center>" CRLF/<hr><center>" OWASP WAF "<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
+    sed -i 's/<hr><center>nginx<\/center>" CRLF/<hr><center>OWASP WAF<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
+    sed -i 's/<hr><center>" NGINX_VER "<\/center>" CRLF/<hr><center>" OWASP WAF "<\/center>" CRLF/' /www/server/nginx/src/src/http/ngx_http_special_response.c
+    ### 下面两个是修改整体宏标签，编译时调用的标签 ######################
+    sed -i 's/#define NGINX_VERSION      ".*"/#define NGINX_VERSION      "5.1.24"/' /www/server/nginx/src/src/core/nginx.h
+    sed -i 's/#define NGINX_VER          "nginx\/" NGINX_VERSION/#define NGINX_VER          "OWASP WAF"/' /www/server/nginx/src/src/core/nginx.h
     else
         wget -O ${Setup_Path}/src.tar.gz ${download_Url}/src/nginx-${nginxVersion}.tar.gz -T20
         tar -xvf src.tar.gz
