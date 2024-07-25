@@ -479,7 +479,7 @@ fi
 mkdir -p /www/server/nginx/owasp/conf
 
 # 添加wordpress常用的nginx拒绝规则配置文件
-wget -c -O https://gist.githubusercontent.com/nfsarmento/57db5abba08b315b67f174cd178bea88/raw/b0768871c3349fdaf549a24268cb01b2be145a6a/nginx-wordpress.conf -T 20
+wget -c -O /www/server/nginx/owasp/conf/nginx-wordpress.conf https://gist.githubusercontent.com/nfsarmento/57db5abba08b315b67f174cd178bea88/raw/b0768871c3349fdaf549a24268cb01b2be145a6a/nginx-wordpress.conf -T 20
 
 
 # 创建引入文件conf
