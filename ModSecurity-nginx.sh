@@ -301,9 +301,9 @@ if [ -n "$nginx_fake_name" ] || [ -n "$nginx_version_number" ]; then
 
     # 替换 HTTP 响应头的 server 参数
     if [ -n "$nginx_fake_name" ]; then
-        sed -i "s/static u_char ngx_http_server_string\[] = \"Server: nginx\" CRLF;/static u_char ngx_http_server_string\[] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-        sed -i "s/static u_char ngx_http_server_full_string\[] = \"Server: \" NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-        sed -i "s/static u_char ngx_http_server_build_string\[] = \"Server: \" NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_string\[\] = \"Server: nginx\" CRLF;/static u_char ngx_http_server_string\[\] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_full_string\[\] = \"Server: \" NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[\] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_build_string\[\] = \"Server: \" NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[\] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
     fi
 
     # 替换 默认错误页的底部标签
