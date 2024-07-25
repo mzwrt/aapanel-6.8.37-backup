@@ -314,9 +314,9 @@ if [ -n "$nginx_fake_name" ] || [ -n "$nginx_version_number" ]; then
 
     # 替换 默认错误页的底部标签
     if [ -n "$nginx_fake_name" ]; then
-        sed -i "s/<hr><center>\" NGINX_VER_BUILD \"<\/center>\" CRLF/<hr><center>\" ${nginx_fake_name} \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+        sed -i "s/<hr><center>\" NGINX_VER_BUILD \"<\/center>\" CRLF/<hr><center>${nginx_fake_name}<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
         sed -i "s/<hr><center>nginx<\/center>\" CRLF/<hr><center>${nginx_fake_name}<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
-        sed -i "s/<hr><center>\" NGINX_VER \"<\/center>\" CRLF/<hr><center>\" ${nginx_fake_name} \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+        sed -i "s/<hr><center>\" NGINX_VER \"<\/center>\" CRLF/<hr><center>${nginx_fake_name}<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
     fi
 
     # 替换 整体宏标签
