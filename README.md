@@ -92,7 +92,7 @@ ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS �
 
 添加ngx_brotli模块 --add-module=/www/server/nginx/src/ngx_brotli
 
-添加ModSecurity-nginx静态模块 --add-module=/www/server/nginx/owasp/ModSecurity-nginx 如果需要编译成动态模块修改成 --add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx 动态模块需要根据官方文档引入.so文件，请详细观看下面的使用说明
+添加ModSecurity-nginx动态模块--add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx 动态模块需要根据官方文档引入.so文件，方便后期更新维护 如果需要编译成动态模块修改成  --add-module=/www/server/nginx/owasp/ModSecurity-nginx 根据官方文档尽量编译成动态模块，这样后期更新很方便，方便维护，请详细观看下面的使用说明
 
 
 注意：ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖
