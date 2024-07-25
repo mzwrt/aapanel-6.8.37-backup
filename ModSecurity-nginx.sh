@@ -10,7 +10,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 echo "你是以root用户运行此脚本。脚本继续运行"
 
-read -p "请输入将nginx伪装成什么名字（例如：OWASP WAF） 留空将不修改使用默认值 默认值是ngixn： " nginx_fake_name
+read -p "请输入将nginx伪装成什么名字（例如：OWASP WAF 禁止使用任何特殊符号仅限英文大小写和空格） 留空将不修改使用默认值 默认值是ngixn： " nginx_fake_name
 read -p "请输入自定义的nginx版本号（例如：5.1.24）  留空将不修改使用默认版本号： " nginx_version_number
 
 public_file=/www/server/panel/install/public.sh
