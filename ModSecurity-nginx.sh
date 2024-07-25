@@ -271,7 +271,8 @@ if [ -n "$nginx_fake_name" ] || [ -n "$nginx_version_number" ]; then
     fi
 
     # 替换 整体宏标签
-    # 这是爆改nginx 注释掉是因为不需要替换，用户能获取到的只有server标签和错误页标签
+    # 注释掉是因为不需要替换，用户能获取到的只有server标签和错误页标签显示的名字，根据CIS安全基准这已经足够安全，符合所有安全基准
+    # 如果需要完全隐藏nginx任何地方都不能显示nginx，而是显示你的自定义名可以取消注释
     # if [ -n "$nginx_version_number" ]; then
     #     sed -i "s/#define NGINX_VERSION      \".*\"/#define NGINX_VERSION      \"${nginx_version_number}\"/" /www/server/nginx/src/src/core/nginx.h
     # fi
