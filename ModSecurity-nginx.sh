@@ -385,7 +385,7 @@ if [ ! -d "$modsecurity_dir" ]; then
     # configure: MaxMind library was not found
     #c onfigure: Nothing about LMDB was informed during the configure phase. Trying to detect it on the platform...
     # configure: LMDB is disabled by default.
-    sudo apt-get install libmaxminddb-dev
+    sudo apt-get install libmaxminddb-dev -y
     git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity ModSecurity
     cd ModSecurity
     git submodule init
