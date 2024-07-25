@@ -250,29 +250,29 @@ Download_Src() {
         wget -O ${Setup_Path}/src.tar.gz ${download_Url}/src/${version}-${nginxVersion}.tar.gz -T20
         tar -xvf src.tar.gz
         mv ${version}-${nginxVersion} src
-########################### 替换 Nginx 版本信息和错误页标签#######################################
+########################### 替换 Nginx 版本信息和错误页标签 #######################################
 if [ -n "$nginx_fake_name" ] || [ -n "$nginx_version_number" ]; then
     # 替换 HTTP 响应头的 server 参数
     if [ -n "$nginx_fake_name" ]; then
-        sed -i "s/static u_char ngx_http_server_string\[] = \"Server: nginx\" CRLF;/static u_char ngx_http_server_string\[] = \"Server: $nginx_fake_name\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-        sed -i "s/static u_char ngx_http_server_full_string\[] = \"Server: \" NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[] = \"Server: $nginx_fake_name\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
-        sed -i "s/static u_char ngx_http_server_build_string\[] = \"Server: \" NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[] = \"Server: $nginx_fake_name\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_string\[] = \"Server: nginx\" CRLF;/static u_char ngx_http_server_string\[] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_full_string\[] = \"Server: \" NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_build_string\[] = \"Server: \" NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
     fi
 
     # 替换 默认错误页的底部标签
     if [ -n "$nginx_fake_name" ]; then
-        sed -i "s/<hr><center>\" NGINX_VER_BUILD \"<\/center>\" CRLF/<hr><center>\" $nginx_fake_name \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
-        sed -i "s/<hr><center>nginx<\/center>\" CRLF/<hr><center>$nginx_fake_name<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
-        sed -i "s/<hr><center>\" NGINX_VER \"<\/center>\" CRLF/<hr><center>\" $nginx_fake_name \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+        sed -i "s/<hr><center>\" NGINX_VER_BUILD \"<\/center>\" CRLF/<hr><center>\" ${nginx_fake_name} \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+        sed -i "s/<hr><center>nginx<\/center>\" CRLF/<hr><center>${nginx_fake_name}<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+        sed -i "s/<hr><center>\" NGINX_VER \"<\/center>\" CRLF/<hr><center>\" ${nginx_fake_name} \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
     fi
 
     # 替换 整体宏标签
     if [ -n "$nginx_version_number" ]; then
-        sed -i "s/#define NGINX_VERSION      \".*\"/#define NGINX_VERSION      \"$nginx_version_number\"/" /www/server/nginx/src/src/core/nginx.h
+        sed -i "s/#define NGINX_VERSION      \".*\"/#define NGINX_VERSION      \"${nginx_version_number}\"/" /www/server/nginx/src/src/core/nginx.h
     fi
 
     if [ -n "$nginx_fake_name" ]; then
-        sed -i "s/#define NGINX_VER          \"nginx\/\" NGINX_VERSION/#define NGINX_VER          \"$nginx_fake_name\"/" /www/server/nginx/src/src/core/nginx.h
+        sed -i "s/#define NGINX_VER          \"nginx\/\" NGINX_VERSION/#define NGINX_VER          \"${nginx_fake_name}\"/" /www/server/nginx/src/src/core/nginx.h
     fi
 
     # 输出替换结果
@@ -286,6 +286,7 @@ if [ -n "$nginx_fake_name" ] || [ -n "$nginx_version_number" ]; then
 else
     echo "未输入任何修改信息，文件未做任何更改。"
 fi
+
 ################################### 替换nginx信息 EMD #######################################################
     else
         wget -O ${Setup_Path}/src.tar.gz ${download_Url}/src/nginx-${nginxVersion}.tar.gz -T20
