@@ -639,7 +639,7 @@ rm -f luamodule-nginx-module-${LuaModVer}.zip
 
 ########################## ngx_devel_kit模块从0.3.1升级到0.3.3 ##############################
     #ngx_devel_kit
-    NgxDevelKitVer="0.3.4"
+    NgxDevelKitVer="0.3.3"
     wget -c -O ngx_devel_kit-${NgxDevelKitVer}.zip https://github.com/vision5/ngx_devel_kit/archive/refs/tags/v0.3.3.zip
     unzip -o ngx_devel_kit-${NgxDevelKitVer}.zip
     mv ngx_devel_kit-${NgxDevelKitVer} ngx_devel_kit
