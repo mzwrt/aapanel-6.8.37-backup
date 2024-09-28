@@ -409,7 +409,7 @@ fi
         ################################### 更新openssl 3.0.15版本 ##############################################
         wget -O openssl.tar.gz https://www.openssl.org/source/openssl-3.0.15.tar.gz -T 20
         tar -xvf openssl.tar.gz
-        mv openssl-${opensslVer} openssl
+        mv openssl-3.0.15 openssl
         rm -f openssl.tar.gz
     else
         wget -O GmSSL-master.zip ${download_Url}/src/GmSSL-master.zip
