@@ -242,15 +242,17 @@ Install_Jemalloc() {
         rm -rf jemalloc*
     fi
 }
+
+############################ LuaJIT从luajit2-2.1-20230410升级到luajit2-2.1-20240815 #####################################
 Install_LuaJIT2(){
     LUAJIT_INC_PATH="luajit-2.1"
-    wget -c -O luajit2-2.1-20230410.zip ${download_Url}/src/luajit2-2.1-20230410.zip
-    unzip -o luajit2-2.1-20230410.zip
-    cd luajit2-2.1-20230410
+    wget -c -O luajit2-2.1-20240815.zip https://github.com/openresty/luajit2/archive/refs/tags/v2.1-20240815.zip
+    unzip -o luajit2-2.1-20240815.zip
+    cd luajit2-2.1-20240815
     make -j${cpuCore}
     make install
     cd .. 
-    rm -rf luajit2-2.1-20230410*
+    rm -rf luajit2-2.1-20240815*
     ln -sf /usr/local/lib/libluajit-5.1.so.2 /usr/local/lib64/libluajit-5.1.so.2
     LD_SO_CHECK=$(cat /etc/ld.so.conf|grep /usr/local/lib)
     if [ -z "${LD_SO_CHECK}" ];then
@@ -258,6 +260,8 @@ Install_LuaJIT2(){
     fi
     ldconfig
 }
+############################ LuaJIT END #####################################
+
 Install_LuaJIT() {
     if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "tengine" ] || [ "${version}" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
         Install_LuaJIT2
@@ -282,6 +286,8 @@ Install_LuaJIT() {
         ldconfig
     fi
 }
+
+
 Install_cjson() {
     if [ ! -f /usr/local/lib/lua/5.1/cjson.so ]; then
         wget -O lua-cjson-2.1.0.tar.gz $download_Url/install/src/lua-cjson-2.1.0.tar.gz -T 20
@@ -601,22 +607,44 @@ cd /www/server/nginx/src
     mv nginx-http-concat-1.2.2 nginx-http-concat
     rm -f nginx-http-concat.zip
 
-    #lua_nginx_module
-    LuaModVer="0.10.13"
-    if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "tengine" ] ||  [ "${version}" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
-        LuaModVer="0.10.24"
-    fi
-    wget -c -O lua-nginx-module-${LuaModVer}.zip ${download_Url}/src/lua-nginx-module-${LuaModVer}.zip
-    unzip -o lua-nginx-module-${LuaModVer}.zip
-    mv lua-nginx-module-${LuaModVer} lua_nginx_module
-    rm -f lua-nginx-module-${LuaModVer}.zip
 
+########################## lua_nginx_module模块从0.10.24升级到0.10.27 ##############################
+    #lua_nginx_module
+    #LuaModVer="0.10.13"
+    #if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "tengine" ] ||  [ "${version}" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
+    #    LuaModVer="0.10.24"
+    #fi
+    #wget -c -O lua-nginx-module-${LuaModVer}.zip ${download_Url}/src/lua-nginx-module-${LuaModVer}.zip
+    #unzip -o lua-nginx-module-${LuaModVer}.zip
+    #mv lua-nginx-module-${LuaModVer} lua_nginx_module
+    #rm -f lua-nginx-module-${LuaModVer}.zip
+
+# lua_nginx_module
+if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ] || [ "${version}" == "tengine" ]; then
+    LuaModVer="0.10.27"
+    LuaModuleDownloadUrl="https://github.com/openresty/lua-nginx-module/archive/refs/tags/v${LuaModVer}.zip"
+else
+    LuaModVer="0.10.13"
+    LuaModuleDownloadUrl="${download_Url}/src/lua-nginx-module-${LuaModVer}.zip"  # 使用初始定义的 download_Url
+fi
+
+# 下载并解压 Lua 模块
+wget -c -O luamodule-nginx-module-${LuaModVer}.zip ${LuaModuleDownloadUrl}
+unzip -o luamodule-nginx-module-${LuaModVer}.zip
+mv lua-nginx-module-${LuaModVer} luamodule_nginx_module
+rm -f luamodule-nginx-module-${LuaModVer}.zip
+########################## lua_nginx_module END ##############################
+
+
+
+########################## ngx_devel_kit模块从0.3.1升级到0.3.3 ##############################
     #ngx_devel_kit
-    NgxDevelKitVer="0.3.1"
-    wget -c -O ngx_devel_kit-${NgxDevelKitVer}.zip ${download_Url}/src/ngx_devel_kit-${NgxDevelKitVer}.zip
+    NgxDevelKitVer="0.3.4"
+    wget -c -O ngx_devel_kit-${NgxDevelKitVer}.zip https://github.com/vision5/ngx_devel_kit/archive/refs/tags/v0.3.3.zip
     unzip -o ngx_devel_kit-${NgxDevelKitVer}.zip
     mv ngx_devel_kit-${NgxDevelKitVer} ngx_devel_kit
     rm -f ngx_devel_kit-${NgxDevelKitVer}.zip
+########################## ngx_devel_kit END ##############################
 
     #nginx-dav-ext-module
     NgxDavVer="3.0.0"
@@ -863,19 +891,19 @@ Install_Nginx() {
     fi
 
     if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "tengine" ] || [ "${version}" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
-        wget -c -O lua-resty-core-0.1.26.zip ${download_Url}/src/lua-resty-core-0.1.26.zip
-        unzip lua-resty-core-0.1.26.zip
-        cd lua-resty-core-0.1.26
+        wget -c -O lua-resty-core-0.1.29.zip https://github.com/openresty/lua-resty-core/archive/refs/tags/v0.1.29.zip
+        unzip lua-resty-core-0.1.29.zip
+        cd lua-resty-core-0.1.29
         make install PREFIX=/www/server/nginx
         cd ..
-        rm -rf lua-resty-core-0.1.26*
+        rm -rf lua-resty-core-0.1.29*
 
-        wget -c -O lua-resty-lrucache-0.13.zip ${download_Url}/src/lua-resty-lrucache-0.13.zip
-        unzip lua-resty-lrucache-0.13.zip
-        cd lua-resty-lrucache-0.13
+        wget -c -O lua-resty-lrucache-0.14.zip https://github.com/openresty/lua-resty-lrucache/archive/refs/tags/v0.14.zip
+        unzip lua-resty-lrucache-0.14.zip
+        cd lua-resty-lrucache-0.14
         make install PREFIX=/www/server/nginx
         cd ..
-        rm -rf lua-resty-core-0.1.26*
+        rm -rf lua-resty-lrucache-0.14*
 
     fi
 	
@@ -910,19 +938,19 @@ Update_Nginx() {
     \cp -rfp ${Setup_Path}/src/objs/nginx ${Setup_Path}/sbin/
     if [ "${version}" == "1.25" ] ||  [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
         if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "tengine" ] || [ "${version}" == "1.25" ] ||  [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ] ;then
-            wget -c -O lua-resty-core-0.1.26.zip ${download_Url}/src/lua-resty-core-0.1.26.zip
-            unzip lua-resty-core-0.1.26.zip
-            cd lua-resty-core-0.1.26
+            wget -c -O lua-resty-core-0.1.29.zip https://github.com/openresty/lua-resty-core/archive/refs/tags/v0.1.29.zip
+            unzip lua-resty-core-0.1.29.zip
+            cd lua-resty-core-0.1.29
             make install PREFIX=/www/server/nginx
             cd ..
-            rm -rf lua-resty-core-0.1.26*
+            rm -rf lua-resty-core-0.1.29*
     
-            wget -c -O lua-resty-lrucache-0.13.zip ${download_Url}/src/lua-resty-lrucache-0.13.zip
-            unzip lua-resty-lrucache-0.13.zip
-            cd lua-resty-lrucache-0.13
+            wget -c -O lua-resty-lrucache-0.14.zip https://github.com/openresty/lua-resty-lrucache/archive/refs/tags/v0.14.zip
+            unzip lua-resty-lrucache-0.14.zip
+            cd lua-resty-lrucache-0.14
             make install PREFIX=/www/server/nginx
             cd ..
-            rm -rf lua-resty-core-0.1.26*
+            rm -rf lua-resty-lrucache-0.14*
         fi
         wget -O /etc/init.d/nginx ${download_Url}/init/124nginx.init
     fi
