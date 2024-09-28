@@ -84,7 +84,7 @@ ModSecurity-nginx.sh 使用方法：
 ```
      rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/ModSecurity-nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
 ```
-ModSecurity-nginx-http3.sh是新版，最高支持1.26，默认开启http3，并且脚本已经升级lua到最新版（2024-9-29）默认安装1.26.2
+ModSecurity-nginx-http3.sh是新版，最高支持1.26，默认开启http3，并且脚本已经升级lua到最新版（2024-9-29）默认安装1.26
 
 ModSecurity-nginx-http3.sh 使用方法：
 
