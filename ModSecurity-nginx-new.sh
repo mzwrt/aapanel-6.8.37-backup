@@ -438,7 +438,7 @@ fi
     pcre_version="8.45"
     wget -O pcre-8.45.zip https://nchc.dl.sourceforge.net/project/pcre/pcre/8.45/pcre-8.45.zip -T 20
     unzip -o pcre-8.45.zip
-    mv pcre-8.45 pcre
+    #mv pcre-8.45 pcre
     rm -f pcre-8.45.zip
 
    ################################# 添加 brotli 模块 ##############################################
