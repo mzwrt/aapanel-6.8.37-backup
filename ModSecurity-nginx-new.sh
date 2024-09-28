@@ -629,10 +629,10 @@ else
 fi
 
 # 下载并解压 Lua 模块
-wget -c -O luamodule-nginx-module-${LuaModVer}.zip ${LuaModuleDownloadUrl}
-unzip -o luamodule-nginx-module-${LuaModVer}.zip
-mv lua-nginx-module-${LuaModVer} luamodule_nginx_module
-rm -f luamodule-nginx-module-${LuaModVer}.zip
+wget -c -O lua-nginx-module-${LuaModVer}.zip ${LuaModuleDownloadUrl}
+unzip -o lua-nginx-module-${LuaModVer}.zip
+mv lua-nginx-module-${LuaModVer} lua-nginx-module-
+rm -f lua-nginx-module-${LuaModVer}.zip
 ########################## lua_nginx_module END ##############################
 
 
