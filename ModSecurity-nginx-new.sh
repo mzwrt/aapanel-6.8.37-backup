@@ -631,7 +631,7 @@ fi
 # 下载并解压 Lua 模块
 wget -c -O lua-nginx-module-${LuaModVer}.zip ${LuaModuleDownloadUrl}
 unzip -o lua-nginx-module-${LuaModVer}.zip
-mv lua-nginx-module-${LuaModVer} lua-nginx-module-
+mv lua-nginx-module-${LuaModVer} lua_nginx_module
 rm -f lua-nginx-module-${LuaModVer}.zip
 ########################## lua_nginx_module END ##############################
 
