@@ -302,6 +302,13 @@ Download_Src() {
         wget -O ${Setup_Path}/src.tar.gz ${download_Url}/src/${version}-${nginxVersion}.tar.gz -T20
         tar -xvf src.tar.gz
         mv ${version}-${nginxVersion} src
+
+    # 规范文件权限防止出现无效用户文件
+    # 因为宝塔文件设置并不严谨必须修改
+    # 根据CIS NGINX 基准测试v2.1.0的2.3.1
+    # 将所有权仅设置为 root 组和 root 用户中的用户将减少对 nginx 配置文件进行未经授权修改的可能性。
+    chown -R root:root /www/server/nginx/src
+ 
 ########################### 替换 Nginx 版本信息和错误页标签 #######################################
 if [ -n "$nginx_fake_name" ] || [ -n "$nginx_version_number" ]; then
     # 处理特殊字符
@@ -350,6 +357,13 @@ fi
         tar -xvf src.tar.gz
         tar -xvf src.tar.gz
         mv nginx-${nginxVersion} src
+
+    # 规范文件权限防止出现无效用户文件
+    # 因为宝塔文件设置并不严谨必须修改
+    # 根据CIS NGINX 基准测试v2.1.0的2.3.1
+    # 将所有权仅设置为 root 组和 root 用户中的用户将减少对 nginx 配置文件进行未经授权修改的可能性。
+    chown -R root:root /www/server/nginx/src
+ 
 ########################### 替换 Nginx 版本信息和错误页标签 #######################################
 if [ -n "$nginx_fake_name" ] || [ -n "$nginx_version_number" ]; then
     # 处理特殊字符
