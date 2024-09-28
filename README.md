@@ -78,6 +78,20 @@ openresty='1.25.3.1'
 
 # ModSecurity-nginx.sh
 
+ModSecurity-nginx.sh是旧版最高支持1.24，默认安装1.24
+
+ModSecurity-nginx.sh 使用方法：
+```
+     rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/ModSecurity-nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
+```
+ModSecurity-nginx-http3.sh是新版，最高支持1.26，默认开启http3，并且脚本已经升级lua到最新版（2024-9-29）默认安装1.26.2
+
+ModSecurity-nginx-http3.sh 使用方法：
+
+```
+ rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/refs/heads/main/ModSecurity-nginx-http3.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.26
+ ```
+
 ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS ），根据官方文档添加
 
 修复/www/server/nginx/src里面的未知用户文件夹
@@ -96,11 +110,6 @@ ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS �
 
 
 注意：ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖
-
-ModSecurity-nginx.sh 使用方法：
-
-     rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/ModSecurity-nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
-
 
 ModSecurity存放路径：/www/server/nginx/owasp/ModSecurity
 
