@@ -290,9 +290,11 @@ Install_LuaJIT() {
 
 Install_cjson() {
     if [ ! -f /usr/local/lib/lua/5.1/cjson.so ]; then
-        wget -O lua-cjson-2.1.0.tar.gz $download_Url/install/src/lua-cjson-2.1.0.tar.gz -T 20
+    ################################ 升级lua-cjson-2.1.0为最新版 #########################################
+        wget -O lua-cjson-2.1.0.tar.gz https://github.com/openresty/lua-cjson/archive/refs/tags/2.1.0.9.tar.gz -T 20
         tar xvf lua-cjson-2.1.0.tar.gz
         rm -f lua-cjson-2.1.0.tar.gz
+	mv lua-cjson-2.1.0.9 lua-cjson-2.1.0
         cd lua-cjson-2.1.0
         make
         make install
