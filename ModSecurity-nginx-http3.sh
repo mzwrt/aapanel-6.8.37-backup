@@ -468,6 +468,24 @@ cd lmdb/libraries/liblmdb
 make
 make install
 
+# 创建lmdb.pc文件
+cat <<EOL > /usr/local/lib/pkgconfig/lmdb.pc
+prefix=/usr/local
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: LMDB
+Description: Lightning Memory-Mapped Database
+Version: 0.9.29
+Libs: -L\${libdir} -llmdb
+Cflags: -I\${includedir}
+EOL
+
+echo "lmdb.pc文件已创建。"
+export PKG_CONFIG_PATH=/path/to/lmdb/pkgconfig:$PKG_CONFIG_PATH
+
+
 modsecurity_dir="/usr/local/modsecurity"
 
 if [ ! -d "$modsecurity_dir" ]; then
