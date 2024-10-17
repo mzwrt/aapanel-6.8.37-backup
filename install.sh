@@ -355,7 +355,7 @@ Install_Deb_Pack() {
 
    ################### --force-yes已经弃用删除 #######################################3
     # DEBIAN_FRONTEND=noninteractive apt-get install -y $debPacks --force-yes
-    DEBIAN_FRONTEND=noninteractive apt-get install -y $debPacks --force-yes
+    DEBIAN_FRONTEND=noninteractive apt-get install -y $debPacks 
 
     for debPack in ${debPacks}; do
         packCheck=$(dpkg -l ${debPack})
