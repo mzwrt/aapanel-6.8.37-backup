@@ -463,7 +463,7 @@ chown -R root:root /www/server/nginx/owasp
 
 #### 通过https://github.com/LMDB/lmdb.git安装lmdb。因为debian12测试安装liblmdb-dev检测不到lmdb
 cd /www/server/nginx/owasp/
-git clone git clone https://github.com/LMDB/lmdb.git
+git clone https://github.com/LMDB/lmdb.git
 cd lmdb/libraries/liblmdb
 make
 make install
