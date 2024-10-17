@@ -968,25 +968,10 @@ Install_Main() {
     Get_Pack_Manager
     get_node_url
 
-#################### 修复错误 #################
-#    MEM_TOTAL=$(free -g | grep Mem | awk '{print $2}')
-#    if [ "${MEM_TOTAL}" -le "1" ]; then
-#        Auto_Swap
-#    fi
-
     MEM_TOTAL=$(free -g | grep Mem | awk '{print $2}')
-    echo "Total Memory: ${MEM_TOTAL}"  # 调试输出
-
-    # 检查是否获取到有效的内存值
-    if [ -z "${MEM_TOTAL}" ] || ! [[ "${MEM_TOTAL}" =~ ^[0-9]+$ ]]; then
-        echo "Error: Could not determine total memory."
-        exit 1
-    fi
-
     if [ "${MEM_TOTAL}" -le "1" ]; then
         Auto_Swap
     fi
-#################### END #############
 
     if [ "${PM}" = "yum" ]; then
         Install_RPM_Pack
