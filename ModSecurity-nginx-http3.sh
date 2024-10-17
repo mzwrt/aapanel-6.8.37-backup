@@ -461,35 +461,6 @@ fi
 mkdir -p /www/server/nginx/owasp
 chown -R root:root /www/server/nginx/owasp
 
-#### 通过https://github.com/LMDB/lmdb.git安装lmdb。因为debian12测试安装liblmdb-dev检测不到lmdb
-# 安装 LMDB
-cd /www/server/nginx/owasp/
-git clone https://github.com/LMDB/lmdb.git
-cd lmdb/libraries/liblmdb
-make
-sudo make install
-
-# 创建 lmdb.pc 文件
-cat <<EOL > /usr/local/lib/pkgconfig/lmdb.pc
-prefix=/usr/local
-exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib
-includedir=\${prefix}/include
-
-Name: LMDB
-Description: Lightning Memory-Mapped Database
-Version: 0.9.29
-Libs: -L\${libdir} -llmdb
-Cflags: -I\${includedir}
-EOL
-
-echo "lmdb.pc文件已创建。"
-
-# 设置 PKG_CONFIG_PATH
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
-
-
-
 modsecurity_dir="/usr/local/modsecurity"
 
 if [ ! -d "$modsecurity_dir" ]; then
