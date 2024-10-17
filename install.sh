@@ -353,6 +353,8 @@ Install_Deb_Pack() {
 
     debPacks="wget curl libcurl4-openssl-dev gcc make zip unzip tar openssl libssl-dev gcc libxml2 libxml2-dev zlib1g zlib1g-dev libjpeg-dev libpng-dev lsof libpcre3 libpcre3-dev cron net-tools swig build-essential libffi-dev libbz2-dev libncurses-dev libsqlite3-dev libreadline-dev tk-dev libgdbm-dev libdb-dev libdb++-dev libpcap-dev xz-utils git ufw ipset sqlite3"
 
+   ################### --force-yes已经弃用删除 #######################################3
+    # DEBIAN_FRONTEND=noninteractive apt-get install -y $debPacks --force-yes
     DEBIAN_FRONTEND=noninteractive apt-get install -y $debPacks --force-yes
 
     for debPack in ${debPacks}; do
