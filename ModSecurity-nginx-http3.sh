@@ -241,15 +241,15 @@ Install_Jemalloc() {
     echo "Latest jemalloc version: ${jemalloc_version}"
 
     # 设置下载链接
-    jemalloc_download_url="https://github.com/jemalloc/jemalloc/releases/download/${jemalloc_version}/jemalloc-${jemalloc_version:1}.tar.bz2"
+    jemalloc_download_url="https://github.com/jemalloc/jemalloc/releases/download/${jemalloc_version}/jemalloc-${jemalloc_version}.tar.bz2"
 
     # 调试输出下载链接
     echo "Downloading from: ${jemalloc_download_url}"
 
     if [ ! -f '/usr/local/lib/libjemalloc.so' ]; then
-        wget -O jemalloc.tar.bz2 "${jemalloc_download_url}"
-        tar -xvf jemalloc.tar.bz2
-        cd "jemalloc-${jemalloc_version:1}"
+        wget -O jemalloc.tar.bz2 "${jemalloc_download_url}" || { echo "Download failed"; return 1; }
+        tar -xvf jemalloc.tar.bz2 || { echo "Extraction failed"; return 1; }
+        cd "jemalloc-${jemalloc_version:1}" || { echo "Directory change failed"; return 1; }
         ./configure
         make && make install
         ldconfig
@@ -257,6 +257,8 @@ Install_Jemalloc() {
         rm -rf jemalloc*
     fi
 }
+
+
 
 
 
