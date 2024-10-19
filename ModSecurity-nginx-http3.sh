@@ -249,7 +249,10 @@ Install_Jemalloc() {
     if [ ! -f '/usr/local/lib/libjemalloc.so' ]; then
         wget -O jemalloc.tar.bz2 "${jemalloc_download_url}" || { echo "Download failed"; return 1; }
         tar -xvf jemalloc.tar.bz2 || { echo "Extraction failed"; return 1; }
-        cd "jemalloc-${jemalloc_version:1}" || { echo "Directory change failed"; return 1; }
+        
+        # 这里的版本号需要处理，确保进入的目录名称正确
+        cd "jemalloc-${jemalloc_version#v}" || { echo "Directory change failed"; return 1; }  # 去掉版本号前的 "v"
+
         ./configure
         make && make install
         ldconfig
@@ -257,11 +260,6 @@ Install_Jemalloc() {
         rm -rf jemalloc*
     fi
 }
-
-
-
-
-
 
 # 这个是原版上面是修改版
 #Install_Jemalloc() {
