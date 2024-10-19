@@ -249,8 +249,8 @@ Install_Jemalloc() {
     if [ ! -f '/usr/local/lib/libjemalloc.so' ]; then
         wget -O jemalloc.tar.bz2 "${jemalloc_download_url}" || { echo "Download failed"; return 1; }
         tar -xvf jemalloc.tar.bz2 || { echo "Extraction failed"; return 1; }
-        
-        # 这里的版本号需要处理，确保进入的目录名称正确
+
+        # 这里使用正确的目录名称
         cd "jemalloc-${jemalloc_version#v}" || { echo "Directory change failed"; return 1; }  # 去掉版本号前的 "v"
 
         ./configure
