@@ -193,8 +193,8 @@ System_Lib() {
         fi
         apt-get update -y
 	########################### 安装ModSecurity必备软件包 ####################################################
-	apt install -y apt-utils autoconf automake build-essential git libcurl4-openssl-dev libgeoip-dev liblmdb-dev libtool libxml2-dev libyajl-dev pkgconf wget zlib1g-dev
- 
+	sudo apt install -y apt-utils autoconf automake build-essential git libcurl4-openssl-dev libgeoip-dev liblmdb-dev libtool libxml2-dev libyajl-dev pkgconf wget zlib1g-dev liblua5.3-dev libmaxminddb0 libmaxminddb-dev
+
         Pack="gcc g++ libgd3 libgd-dev libevent-dev libncurses5-dev libreadline-dev uuid-dev"
         ${PM} install ${Pack} -y
         apt-get install libxslt1-dev -y 2>&1 >> /tmp/pack_i.pl
@@ -471,7 +471,7 @@ if [ ! -d "$modsecurity_dir" ]; then
     # configure: MaxMind library was not found
     #c onfigure: Nothing about LMDB was informed during the configure phase. Trying to detect it on the platform...
     # configure: LMDB is disabled by default.
-    sudo apt-get install libmaxminddb-dev -y
+    #sudo apt install libyajl-dev libgeoip-dev liblmdb-dev liblua5.3-dev libmaxminddb0 libmaxminddb-dev -y
     git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity ModSecurity
     cd ModSecurity
     git submodule init
