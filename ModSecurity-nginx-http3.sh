@@ -237,8 +237,14 @@ Install_Jemalloc() {
     # 获取最新版本号
     jemalloc_version=$(curl -s https://api.github.com/repos/jemalloc/jemalloc/releases/latest | grep '"tag_name":' | cut -d '"' -f 4)
 
+    # 调试输出版本号
+    echo "Latest jemalloc version: ${jemalloc_version}"
+
     # 设置下载链接
     jemalloc_download_url="https://github.com/jemalloc/jemalloc/releases/download/${jemalloc_version}/jemalloc-${jemalloc_version:1}.tar.bz2"
+
+    # 调试输出下载链接
+    echo "Downloading from: ${jemalloc_download_url}"
 
     if [ ! -f '/usr/local/lib/libjemalloc.so' ]; then
         wget -O jemalloc.tar.bz2 "${jemalloc_download_url}"
@@ -251,6 +257,7 @@ Install_Jemalloc() {
         rm -rf jemalloc*
     fi
 }
+
 
 
 
