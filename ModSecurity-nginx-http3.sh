@@ -230,11 +230,20 @@ Set_Time() {
     SYS_DATE=$(date +%Y%m%d)
     [ "${SYS_DATE}" -lt "${BASH_DATE}" ] && date -s "$(curl https://www.bt.cn//api/index/get_date)"
 }
+
+################ 升级jemalloc为最新版 ####################################
+
 Install_Jemalloc() {
+    # 获取最新版本号
+    jemalloc_version=$(curl -s https://api.github.com/repos/jemalloc/jemalloc/releases/latest | jq -r .tag_name)
+
+    # 设置下载链接
+    jemalloc_download_url="https://github.com/jemalloc/jemalloc/releases/download/${jemalloc_version}/jemalloc-${jemalloc_version:1}.tar.bz2"
+
     if [ ! -f '/usr/local/lib/libjemalloc.so' ]; then
-        wget -O jemalloc-5.0.1.tar.bz2 ${download_Url}/src/jemalloc-5.0.1.tar.bz2
-        tar -xvf jemalloc-5.0.1.tar.bz2
-        cd jemalloc-5.0.1
+        wget -O jemalloc.tar.bz2 "${jemalloc_download_url}"
+        tar -xvf jemalloc.tar.bz2
+        cd "jemalloc-${jemalloc_version:1}"
         ./configure
         make && make install
         ldconfig
@@ -242,6 +251,22 @@ Install_Jemalloc() {
         rm -rf jemalloc*
     fi
 }
+
+# 这个是原版上面是修改版
+#Install_Jemalloc() {
+#    if [ ! -f '/usr/local/lib/libjemalloc.so' ]; then
+#        wget -O jemalloc-5.0.1.tar.bz2 ${download_Url}/src/jemalloc-5.0.1.tar.bz2
+#        tar -xvf jemalloc-5.0.1.tar.bz2
+#        cd jemalloc-5.0.1
+#        ./configure
+#        make && make install
+#        ldconfig
+#        cd ..
+#        rm -rf jemalloc*
+#    fi
+#}
+################ jemalloc END ####################################
+
 
 ############################ LuaJIT从luajit2-2.1-20230410升级到luajit2-2.1-20240815 #####################################
 Install_LuaJIT2(){
