@@ -193,7 +193,7 @@ System_Lib() {
         fi
         apt-get update -y
 	########################### 安装ModSecurity必备软件包 ####################################################
-	sudo apt install -y apt-utils autoconf automake build-essential git libcurl4-openssl-dev libgeoip-dev liblmdb-dev libtool libxml2-dev libyajl-dev pkgconf wget zlib1g-dev liblua5.3-dev libmaxminddb0 libmaxminddb-dev
+	sudo apt install -y apt-utils autoconf automake build-essential git ssdeep libpcre2-dev libpcre2-8-0  libcurl4-openssl-dev libgeoip-dev liblmdb-dev libtool libxml2-dev libyajl-dev pkgconf wget zlib1g-dev liblua5.3-dev libmaxminddb0 libmaxminddb-dev
 
         Pack="gcc g++ libgd3 libgd-dev libevent-dev libncurses5-dev libreadline-dev uuid-dev"
         ${PM} install ${Pack} -y
@@ -235,7 +235,7 @@ Set_Time() {
 
 Install_Jemalloc() {
     # 获取最新版本号
-    jemalloc_version=$(curl -s https://api.github.com/repos/jemalloc/jemalloc/releases/latest | jq -r .tag_name)
+    jemalloc_version=$(curl -s https://api.github.com/repos/jemalloc/jemalloc/releases/latest | grep '"tag_name":' | cut -d '"' -f 4)
 
     # 设置下载链接
     jemalloc_download_url="https://github.com/jemalloc/jemalloc/releases/download/${jemalloc_version}/jemalloc-${jemalloc_version:1}.tar.bz2"
@@ -251,6 +251,8 @@ Install_Jemalloc() {
         rm -rf jemalloc*
     fi
 }
+
+
 
 # 这个是原版上面是修改版
 #Install_Jemalloc() {
