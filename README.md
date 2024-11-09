@@ -4,7 +4,7 @@
 
 安装/install：
 
-     wget  https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install.sh && bash install.sh
+     wget  https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/install.sh && bash install.sh && rm -rf install.sh
 
 
 # 纯官方版，无任何改动,可以放心使用，里面除了修改下载脚本为github连接以外没修改任何文件，一个字母都没动过，脚本里面的多余端口删除了，下面有说明，我自己也在用，因为这个是最后一个6开头的版本了，下一个版本就是7开头的了，破解难度加大了
