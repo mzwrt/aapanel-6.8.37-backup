@@ -4,7 +4,7 @@ export PATH
 LANG=en_US.UTF-8
 
 if [ $(whoami) != "root" ]; then
-    echo "Please use the [root] user to execute the aapanel installation script!"
+    echo "请使用[root]用户执行aapanel安装脚本！"
     exit 1
 fi
 
