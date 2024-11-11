@@ -10,6 +10,80 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 echo "你是以root用户运行此脚本。脚本继续运行"
 
+################### ARM安装lujit ######################
+# 检查系统架构是否是 ARM
+arch_lujit=$(uname -m)
+if [[ "$arch_lujit" == "aarch64" ]]; then
+    echo "ARM 架构 detected."
+  
+    # 提示用户是否继续执行准备脚本
+    read -p "检测到您是ARM架构CPU，是否安装lujit(nginx-lua)宝塔防火墙必备模块? (Y/N): " choice
+    case "$choice" in
+        [Yy]*)
+            echo "运行准备脚本..."
+
+            # 创建 nginx_prepare.sh 脚本
+            cat > /www/server/panel/install/nginx_prepare.sh << 'EOL'
+#!/bin/bash
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+export PATH
+  
+wget -c -O luajit2-2.1-20241104.zip https://github.com/openresty/luajit2/archive/refs/tags/luajit2-2.1-20241104.zip
+unzip -o luajit2-2.1-20241104.zip
+if [ -e luajit2-2.1-20241104 ]; then
+    cd luajit2-2.1-20241104
+    make TARGET=arm64
+    make install
+    export LUAJIT_LIB=/usr/local/lib
+    export LUAJIT_INC=/usr/local/include/luajit2-2.1-20241104/
+    ln -sf /usr/local/lib/libluajit-5.1.so.2 /usr/local/lib64/libluajit-5.1.so.2
+    if [ `grep -c /usr/local/lib /etc/ld.so.conf` -eq 0 ]; then
+        echo "/usr/local/lib" >> /etc/ld.so.conf
+    fi
+    ldconfig
+    cd ..
+fi
+rm -rf luajit2-2.1-20241104
+
+if [ ! -f '/usr/local/lib/libjemalloc.so' ]; then
+    wget -O jemalloc-5.3.0.tar.bz2 https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2
+    tar -xvf jemalloc-5.3.0.tar.bz2
+    cd jemalloc-5.3.0
+    ./configure
+    make && make install
+    ldconfig
+    cd ..
+    rm -rf jemalloc*
+fi
+Install_cjson
+EOL
+
+            # 修复换行符（确保文件是 Unix 格式）
+            sed -i 's/\r//g' /www/server/panel/install/nginx_prepare.sh
+
+            # 创建 nginx_configure.pl 配置文件
+            cat > /www/server/panel/install/nginx_configure.pl << 'EOL'
+--add-module=/www/server/nginx/src/ngx_devel_kit --add-module=/www/server/nginx/src/lua_nginx_module --with-ld-opt=-ljemalloc
+EOL
+
+            echo "Preparation scripts created successfully."
+          
+            # 运行准备脚本
+            /www/server/panel/install/nginx_prepare.sh
+            ;;
+        [Nn]*)
+            echo "跳过安装lujit."
+            ;;
+        *)
+            echo "选择无效。退出."
+            exit 1
+            ;;
+    esac
+else
+    echo "您不是 ARM 架构，跳过."
+fi
+################### ARM安装lujit ######################
+
 read -p "请输入将nginx伪装成什么名字 禁止使用任何特殊符号仅限英文大小写和空格（例如：OWASP WAF） 留空将不修改使用默认值 默认值是ngixn： " nginx_fake_name
 read -p "请输入自定义的nginx版本号（例如：5.1.24）留空将不修改使用默认版本号： " nginx_version_number
 
