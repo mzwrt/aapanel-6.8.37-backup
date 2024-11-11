@@ -17,7 +17,7 @@ if [[ "$arch_lujit" == "aarch64" ]]; then
     echo "ARM 架构 detected."
   
     # 提示用户是否继续执行准备脚本
-    read -p "检测到您是ARM架构CPU，是否安装lujit(nginx-lua)宝塔防火墙必备模块? (Y/N): " choice
+    read -p "检测到您是ARM架构CPU，是否安装lujit(nginx-lua)宝塔防火墙必备模块 (Y/N): " choice
     case "$choice" in
         [Yy]*)
             echo "运行准备脚本..."
@@ -80,7 +80,7 @@ EOL
             ;;
     esac
 else
-    echo "您不是 ARM 架构，跳过."
+    echo "您不是 ARM 架构，跳过安装lujit"
 fi
 ################### ARM安装lujit ######################
 
