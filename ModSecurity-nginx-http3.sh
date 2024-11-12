@@ -27,7 +27,9 @@ if [[ "$arch_lujit" == "aarch64" ]]; then
 #!/bin/bash
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
-  
+
+Install_LuaJIT
+
 wget -c -O luajit2-2.1-20241104.zip https://github.com/openresty/luajit2/archive/refs/tags/luajit2-2.1-20241104.zip
 unzip -o luajit2-2.1-20241104.zip
 if [ -e luajit2-2.1-20241104 ]; then
