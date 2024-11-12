@@ -20,7 +20,7 @@ if [[ "$arch_lujit" == "aarch64" ]]; then
     read -p "检测到您是ARM架构CPU，是否安装lujit(nginx-lua)宝塔防火墙必备模块 (Y/N): " choice
     case "$choice" in
         [Yy]*)
-            echo "运行准备脚本..."
+            echo "添加nginx-lujit安装脚本..."
 
             # 创建 nginx_prepare.sh 脚本
             cat > /www/server/panel/install/nginx_prepare.sh << 'EOL'
