@@ -35,7 +35,7 @@ if [ -e luajit2-2.1-20241104 ]; then
     make TARGET=arm64
     make install
     export LUAJIT_LIB=/usr/local/lib
-    export LUAJIT_INC=/usr/local/include/luajit2-2.1-20241104/
+    export LUAJIT_INC=/usr/local/include/luajit-2.1
     ln -sf /usr/local/lib/libluajit-5.1.so.2 /usr/local/lib64/libluajit-5.1.so.2
     if [ `grep -c /usr/local/lib /etc/ld.so.conf` -eq 0 ]; then
         echo "/usr/local/lib" >> /etc/ld.so.conf
