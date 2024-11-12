@@ -69,7 +69,7 @@ EOL
             echo "Preparation scripts created successfully."
           
             # 运行准备脚本
-            /www/server/panel/install/nginx_prepare.sh
+            #/www/server/panel/install/nginx_prepare.sh
             ;;
         [Nn]*)
             echo "跳过安装lujit."
