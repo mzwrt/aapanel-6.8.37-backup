@@ -1207,7 +1207,7 @@ EOF
             \cp -rpa /www/server/nginx/lib/lua/* /www/server/free_waf
         else
             sed -i "/lua_package_path/d" /www/server/nginx/conf/nginx.conf
-            sed -i '/include proxy\.conf;/a \        lua_package_path "/www/server/nginx/lib/lua/?.lua;;";' /www/server/nginx/conf/nginx.conf
+            #sed -i '/include proxy\.conf;/a \        lua_package_path "/www/server/nginx/lib/lua/?.lua;;";' /www/server/nginx/conf/nginx.conf
         fi
         wget -O /etc/init.d/nginx ${download_Url}/init/124nginx.init -T 20
     fi
