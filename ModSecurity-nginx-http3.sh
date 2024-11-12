@@ -45,16 +45,6 @@ if [ -e luajit2-2.1-20241104 ]; then
 fi
 rm -rf luajit2-2.1-20241104
 
-if [ ! -f '/usr/local/lib/libjemalloc.so' ]; then
-    wget -O jemalloc-5.3.0.tar.bz2 https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2
-    tar -xvf jemalloc-5.3.0.tar.bz2
-    cd jemalloc-5.3.0
-    ./configure
-    make && make install
-    ldconfig
-    cd ..
-    rm -rf jemalloc*
-fi
 Install_cjson
 EOL
 
@@ -63,7 +53,7 @@ EOL
 
             # 创建 nginx_configure.pl 配置文件
             cat > /www/server/panel/install/nginx_configure.pl << 'EOL'
---add-module=/www/server/nginx/src/ngx_devel_kit --add-module=/www/server/nginx/src/lua_nginx_module --with-ld-opt=-ljemalloc
+--add-module=/www/server/nginx/src/ngx_devel_kit --add-module=/www/server/nginx/src/lua_nginx_module
 EOL
 
             echo "Preparation scripts created successfully."
