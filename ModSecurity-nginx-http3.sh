@@ -581,12 +581,18 @@ if [ ! -d "$modsecurity_dir" ]; then
     ./configure
     make
     sudo make install
-    mv /www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended /www/server/nginx/owasp/ModSecurity/modsecurity.conf
-else
+    # 配置文件改名
+    if [ -f "/www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended" ]; then
+        cp "/www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended" "/www/server/nginx/owasp/ModSecurity/modsecurity.conf"
+    fi
+    else
     echo "ModSecurity 目录已存在，仅运行 git clone..."
     cd /www/server/nginx/owasp
     git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity ModSecurity
-    mv /www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended /www/server/nginx/owasp/ModSecurity/modsecurity.conf
+    # 配置文件改名
+    if [ -f "/www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended" ]; then
+        cp "/www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended" "/www/server/nginx/owasp/ModSecurity/modsecurity.conf"
+    fi
 fi
 
 # 进入 ModSecurity 源码目录
