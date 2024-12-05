@@ -21,7 +21,8 @@
 默认只添加80,443,ssh端口和面板端口
 
 # nginx安装
-文件是基于 debian 12 编写的兼容ubuntu系统<br>
+文件是基于宝塔的nginx.sh安装文件 基于debian 12 编写的兼容ubuntu系统<br>
+<br>
 注意：所有ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖<br>
 # nginx-1.26 ModSecurity brotli http3版<br>
 ModSecurity-nginx-http3.sh基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，从nginx修改成OWASP WAF和去除nginx版本号<br>
