@@ -1,0 +1,75 @@
+# 确保规则引擎的状态符合你的预期。在实际生产环境中，除非有明确的安全需求，一般情况下应该小心使用 deny 操作，以免无意中阻止合法用户的访问。
+# 在配置中确保合适的日志记录级别，以便及时发现和响应恶意活动。
+# 审查并测试规则，确保其按预期工作并且不会影响到正常的业务流程。
+
+# 此例为 phase:1 阶段(即 Request Headers 处理阶段)，IP 黑名单简单例子
+#
+# SecRule：定义一个规则。
+# REMOTE_ADDR "@ipMatch 192.168.1.110"：匹配远程IP地址为 192.168.1.110 的请求。
+# "id:12001"：规则的唯一标识符。
+# phase:1：规则执行的阶段，这里是请求处理的第一阶段。
+# log：记录事件到ModSecurity日志中，这有助于跟踪和审计规则的应用情况。
+# auditlog：将事件记录到审计日志中，通常是由外部审计日志引擎处理。
+# deny：拒绝访问请求。
+# status:403：返回HTTP状态码403（禁止访问），告知客户端其请求被拒绝。
+#SecRule REMOTE_ADDR "@ipMatch 192.168.1.110" "id:12001,phase:1,log,auditlog,deny,status:403"
+#
+# SecRule：定义一个规则。
+# REMOTE_ADDR "@ipMatch 192.168.1.110,172.16.0.0/12"：匹配远程IP地址为 192.168.1.110 或者位于 172.16.0.0/12 子网中的请求。
+# "id:12002"：规则的唯一标识符。
+# phase:1：规则执行的阶段，这里是请求处理的第一阶段。
+# log：记录事件到ModSecurity日志中，这有助于跟踪和审计规则的应用情况。
+# auditlog：将事件记录到审计日志中，通常是由外部审计日志引擎处理。
+# deny：拒绝访问请求。
+# status:403：返回HTTP状态码403（禁止访问），告知客户端其请求被拒绝。
+#SecRule REMOTE_ADDR "@ipMatch 192.168.1.110,172.16.0.0/12" "id:12002,phase:1,log,auditlog,deny,status:403"
+
+# 此例为 phase:1 阶段(即 Request Headers 处理阶段)，自定义拦截空 User-Agent 黑名单简单例子
+#
+# SecRule：定义一个规则。
+# REQUEST_HEADERS:User-Agent "^$"：匹配 User-Agent 请求头为空字符串的请求。
+# "id:12003"：规则的唯一标识符。
+# phase:1：规则执行的阶段，这里是请求处理的第一阶段。
+# t:none：使用转换器，这里指定为 none，表示不进行任何转换。
+# deny：拒绝访问请求。
+# nolog：禁止写入ModSecurity日志。
+# noauditlog：禁止写入审计日志。
+#SecRule REQUEST_HEADERS:User-Agent "^$" "id:12003,phase:1,t:none,deny,nolog,noauditlog"
+#
+# SecRule：定义一个规则。
+# REQUEST_HEADERS:User-Agent "^-$"：匹配 User-Agent 请求头为单个破折号 - 的请求。
+# "id:12004"：规则的唯一标识符。
+# phase:1：规则执行的阶段，这里是请求处理的第一阶段。
+# t:none：使用转换器，这里指定为 none，表示不进行任何转换。
+# deny：拒绝访问请求。
+# nolog：禁止写入 ModSecurity 日志。
+# noauditlog：禁止写入审计日志。
+#SecRule REQUEST_HEADERS:User-Agent "^-$" "id:12004,phase:1,t:none,deny,nolog,noauditlog"
+#
+# SecRule：定义一个规则。
+# &REQUEST_HEADERS:User-Agent "@eq 0"：检查 User-Agent 请求头的长度是否为零。
+# & 表示引用变量，REQUEST_HEADERS:User-Agent 是引用请求头中的 User-Agent。
+# @eq 0 表示长度等于零。
+# "id:12005"：规则的唯一标识符。
+# phase:1：规则执行的阶段，这里是请求处理的第一阶段。
+# t:none：使用转换器，这里指定为 none，表示不进行任何转换。
+# deny：拒绝访问请求。
+# nolog：禁止写入 ModSecurity 日志。
+# noauditlog：禁止写入审计日志。
+#SecRule &REQUEST_HEADERS:User-Agent "@eq 0" "id:12005,phase:1,t:none,deny,nolog,noauditlog"
+
+# 此例为 phase:1 阶段(即 Request Headers 处理阶段)，自定义 Referer 黑名单示例(稍作修改，可用于做防盗链规则)
+#
+# SecRule：定义一个规则。
+# REQUEST_HEADERS:REFERER "^https?:\\/\\/[\\d\\.]+(\\:\\d+)?\\/?.*"：匹配 Referer 请求头以 http:// 或 https:// 开头的请求。
+# ^https?: 匹配以 http:// 或 https:// 开头。
+# \\/[\\d\\.]+: 匹配斜杠后面跟着数字或点号的内容。
+# (\\:\\d+)?: 匹配可能的端口号。
+# \\/?.*: 匹配可能存在的斜杠和任意其他字符。
+# "id:12006"：规则的唯一标识符。
+# phase:1：规则执行的阶段，这里是请求处理的第一阶段。
+# t:none：使用转换器，这里指定为 none，表示不进行任何转换。
+# deny：拒绝访问请求。
+# nolog：禁止写入 ModSecurity 日志。
+# noauditlog：禁止写入审计日志。
+#SecRule REQUEST_HEADERS:REFERER "^https?:\\/\\/[\\d\\.]+(\\:\\d+)?\\/?.*" "id:12006,phase:1,t:none,deny,nolog,noauditlog"
