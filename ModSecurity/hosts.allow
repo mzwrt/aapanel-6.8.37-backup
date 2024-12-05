@@ -1,0 +1,49 @@
+# 确保这些规则仅用于需要的特定情况下，以免意外允许潜在的恶意请求绕过安全检查。
+# 使用 ctl:ruleEngine=off 动作时要谨慎，确保你了解其影响并明确其适用场景。
+# 规则的编写需要根据具体的安全策略和需求进行调整，以确保安全性和有效性。
+
+# 此例为 phase:1 阶段(即 Request Headers 处理阶段)，IP 白名单简单例子
+#
+# SecRule：定义一个规则。
+# REMOTE_ADDR "@ipMatch 192.168.1.110"：匹配远程IP地址为 192.168.1.110 的请求。
+# "id:11001"：规则的唯一标识符。
+# phase:1：规则执行的阶段，这里是请求处理的第一阶段。
+# nolog：禁止写入日志。
+# pass：如果匹配，则规则通过（不执行动作）。
+# ctl:ruleEngine=off：控制规则引擎关闭，即对匹配的请求不启用其他规则。
+# 这条规则的作用是，当请求的远程IP地址为 192.168.1.110 时，关闭规则引擎，即不再执行其他规则，允许该IP地址的请求绕过其他ModSecurity规则的检查和动作。
+#SecRule REMOTE_ADDR "@ipMatch 192.168.1.110" "id:11001,phase:1,nolog,pass,ctl:ruleEngine=off"
+
+
+#
+# SecRule：定义一个规则。
+# REMOTE_ADDR "@ipMatch 192.168.1.110,172.16.0.0/12"：匹配远程IP地址为 192.168.1.110 或者在 172.16.0.0/12 子网中的请求。
+# "id:11002"：规则的唯一标识符。
+# phase:1：规则执行的阶段，这里是请求处理的第一阶段。
+# nolog：禁止写入日志。
+# pass：如果匹配，则规则通过（不执行动作）。
+# ctl:ruleEngine=off：控制规则引擎关闭，即对匹配的请求不启用其他规则。
+# 这条规则的作用是，当请求的远程IP地址为 192.168.1.110 或者位于 172.16.0.0/12 子网中时，关闭规则引擎，允许这些IP地址范围内的请求绕过其他ModSecurity规则的检查和动作。
+#SecRule REMOTE_ADDR "@ipMatch 192.168.1.110,172.16.0.0/12" "id:11002,phase:1,nolog,pass,ctl:ruleEngine=off"
+
+# 此例为 phase:2 阶段(即 Request Body 处理阶段)，文件及路径白名单简单例子
+#
+# SecRule：定义一个规则。
+# REQUEST_FILENAME "^/index.html$"：匹配请求的文件名为 /index.html 的请求。
+# "id:11003"：规则的唯一标识符。
+# phase:2：规则执行的阶段，这里是请求处理的第二阶段（URI 阶段）。
+# nolog：禁止写入日志。
+# pass：如果匹配，则规则通过（不执行动作）。
+# ctl:ruleEngine=off：控制规则引擎关闭，即对匹配的请求不启用其他规则。
+# 这条规则的作用是，当请求的文件名为 /index.html 时，关闭规则引擎，允许该请求绕过其他ModSecurity规则的检查和动作。
+#SecRule REQUEST_FILENAME "^/index.html$" "id:11003,phase:2,nolog,pass,ctl:ruleEngine=off"
+#
+# SecRule：定义一个规则。
+# REQUEST_URI "^/essay/"：匹配请求的URI以 /essay/ 开头的请求。
+# "id:11004"：规则的唯一标识符。
+# phase:2：规则执行的阶段，这里是请求处理的第二阶段（URI 阶段）。
+# nolog：禁止写入日志。
+# pass：如果匹配，则规则通过（不执行动作）。
+# ctl:ruleEngine=off：控制规则引擎关闭，即对匹配的请求不启用其他规则。
+# 这条规则的作用是，当请求的URI以 /essay/ 开头时，关闭规则引擎，允许这些请求绕过其他ModSecurity规则的检查和动作。
+#SecRule REQUEST_URI "^/essay/" "id:11004,phase:2,nolog,pass,ctl:ruleEngine=off"
