@@ -61,6 +61,8 @@ chmod 600 /www/server/nginx/owasp/conf/*.conf
 chmod 600 /www/server/nginx/owasp/owasp-rules/plugins/*.conf
 chmod 600 /www/server/nginx/owasp/owasp-rules/crs-setup.conf
 chmod 600 /www/server/nginx/owasp/ModSecurity/modsecurity.conf
+chmod 600 /www/server/nginx/owasp/owasp-rules/crs-setup.conf.bak
+chmod 600 /www/server/nginx/owasp/ModSecurity/modsecurity.conf.bak
 chmod 600 /www/server/nginx/owasp/conf/hosts.allow
 chmod 600 /www/server/nginx/owasp/conf/hosts.deny
 
