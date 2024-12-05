@@ -22,6 +22,7 @@
 
 # nginx安装
 文件是基于 debian 12 编写的兼容ubuntu系统
+注意：所有ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖
 # nginx1.26 ModSecurity brotli http3版
 ModSecurity-nginx-http3.sh基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，从nginx修改成OWASP WAF和去除nginx版本号
 ModSecurity-nginx-http3.sh是新版，最高支持1.26，默认开启http3，并且脚本已经升级lua到最新版（2024-9-29）默认安装1.26，下面还有个旧版，默认不开启http3最该支持1.24
@@ -89,8 +90,6 @@ ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS �
 
 添加ModSecurity-nginx动态模块--add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx 动态模块需要根据官方文档引入.so文件，方便后期更新维护 如果需要编译成动态模块修改成  --add-module=/www/server/nginx/owasp/ModSecurity-nginx 根据官方文档尽量编译成动态模块，这样后期更新很方便，方便维护，请详细观看下面的使用说明
 
-
-注意：ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖
 
 ModSecurity存放路径：/www/server/nginx/owasp/ModSecurity
 
