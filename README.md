@@ -28,8 +28,26 @@ nginx.sh 基于BT官方文件修改了一下，文件里面有详细解释，主
 文件是基于 debian 12 编写的兼容ubuntu系统
 
 
-
-
+# ModSecurity防火墙开启脚本
+```
+wget -O /tmp/enable.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/refs/heads/main/ModSecurity/enable.sh && bash /tmp/enable.sh && rm -rf /tmp/enable.sh
+```
+脚本运行完成以后在宝塔后台nginx配置文件`worker_rlimit_nofile 51200;`下面添加
+```
+load_module /www/server/nginx/modules/ngx_http_modsecurity_module.so;
+```
+在`http`块里面添加
+```
+modsecurity on;
+```
+在网站配置文件里面添加
+```
+    # Enable ModSecurity
+    modsecurity on;
+    modsecurity_rules_file /www/server/nginx/owasp/conf/main.conf;
+```
+这样你的网站已经初步开启owasp防火墙了，然后就是后面的调试工作
+<br>
 nginx.sh 使用方法：
 
      rm -f /www/server/panel/install/nginx.sh && wget -O /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
