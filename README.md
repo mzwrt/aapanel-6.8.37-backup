@@ -20,12 +20,17 @@
 
 默认只添加80,443,ssh端口和面板端口
 
-# nginx.sh 文件
-
-
-nginx.sh 基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，从nginx修改成OWASP WAF和去除nginx版本号
-
+# nginx安装
 文件是基于 debian 12 编写的兼容ubuntu系统
+# nginx1.26 ModSecurity brotli http3版
+ModSecurity-nginx-http3.sh基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，从nginx修改成OWASP WAF和去除nginx版本号
+ModSecurity-nginx-http3.sh是新版，最高支持1.26，默认开启http3，并且脚本已经升级lua到最新版（2024-9-29）默认安装1.26，下面还有个旧版，默认不开启http3最该支持1.24
+
+ModSecurity-nginx-http3.sh 使用方法：
+
+```
+ rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/refs/heads/main/ModSecurity-nginx-http3.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.26
+ ```
 
 
 # ModSecurity防火墙开启脚本
@@ -46,18 +51,19 @@ modsecurity on;
     modsecurity on;
     modsecurity_rules_file /www/server/nginx/owasp/conf/main.conf;
 ```
-这样你的网站已经初步开启owasp防火墙了，然后就是后面的调试工作
+这样你的网站已经初步开启owasp防火墙了，然后就是后面的调试工作，遇到403错误就查看网站日志文件进行规则调试
 <br>
+
+# 1.24版本 brotli版
+nginx.sh 基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，从nginx修改成OWASP WAF和去除nginx版本号
 nginx.sh 使用方法：
 
      rm -f /www/server/panel/install/nginx.sh && wget -O /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
 
 注意修改命令尾部的版本号，默认安装 nginx 1.24
+<br><br>
 
-
-<br><br><br>
-
-# ModSecurity-nginx.sh
+# 1.24版本 brotli和ModSecurity版
 
 ModSecurity-nginx.sh是旧版最高支持1.24，默认安装1.24
 
@@ -66,15 +72,6 @@ ModSecurity-nginx.sh 使用方法：
 ```
      rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/ModSecurity-nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
 ```
-
-
-ModSecurity-nginx-http3.sh是新版，最高支持1.26，默认开启http3，并且脚本已经升级lua到最新版（2024-9-29）默认安装1.26
-
-ModSecurity-nginx-http3.sh 使用方法：
-
-```
- rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/refs/heads/main/ModSecurity-nginx-http3.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.26
- ```
 
 ModSecurity-nginx.sh 基于nginx.sh添加了ModSecurity防火墙（ OWASP CRS ），根据官方文档添加
 
