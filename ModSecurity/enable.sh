@@ -49,6 +49,20 @@ if [ -f /www/server/nginx/owasp/conf/main.conf ]; then
 fi
 wget -q -O /www/server/nginx/owasp/conf/main.conf "https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/refs/heads/main/ModSecurity/main.conf"
 
+echo " 规范文件权限"
+chown -R root:root /www/server/nginx/owasp/conf/*.conf
+chown -R root:root /www/server/nginx/owasp/owasp-rules/plugins/*.conf
+chown -R root:root /www/server/nginx/owasp/owasp-rules/crs-setup.conf
+chown -R root:root /www/server/nginx/owasp/ModSecurity/modsecurity.conf
+chown -R root:root /www/server/nginx/owasp/conf/hosts.allow
+chown -R root:root /www/server/nginx/owasp/conf/hosts.deny
+
+chmod 600 /www/server/nginx/owasp/conf/*.conf
+chmod 600 /www/server/nginx/owasp/owasp-rules/plugins/*.conf
+chmod 600 /www/server/nginx/owasp/owasp-rules/crs-setup.conf
+chmod 600 /www/server/nginx/owasp/ModSecurity/modsecurity.conf
+chmod 600 /www/server/nginx/owasp/conf/hosts.allow
+chmod 600 /www/server/nginx/owasp/conf/hosts.deny
 
 # 完成
 echo "============================================================================================="
@@ -83,4 +97,7 @@ echo "main.conf是引入modsecurity规则集的文件，就是/www/server/nginx/
 echo "main.conf里面有详细解释请仔细阅读"
 echo "【注意】默认WordPress 规则排除插件是注释掉的，在最底部。如果使用请删除注释"
 echo "文件路径：/www/server/nginx/owasp/conf/main.conf"
+echo "============================================================================================="
+echo "【注意】默认有文件会备份上面所有的文件为XXX.bak防止误操作"
+echo "如果你搭配我的ModSecurity-nginx.sh脚本会生成crs-setup.conf.bak main.conf.bak crs-setup.conf.bak 这三个文件可以删除"
 echo "============================================================================================="
