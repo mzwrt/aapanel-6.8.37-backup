@@ -25,8 +25,8 @@
 <br>
 注意：所有ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖<br>
 # nginx-1.26 ModSecurity brotli http3版<br>
-ModSecurity-nginx-http3.sh基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，从nginx修改成OWASP WAF和去除nginx版本号<br>
-ModSecurity-nginx-http3.sh是新版，最高支持1.26，默认开启http3，并且脚本已经升级lua到最新版（2024-9-29）默认安装1.26，下面还有个旧版，默认不开启http3最该支持1.24<br>
+ModSecurity-nginx-http3.sh基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，将nginx修改成自定义字段和去除nginx版本号<br>
+ModSecurity-nginx-http3.sh是新版，最高支持1.26，默认开启http3，并且脚本已经升级lua到最新版（2024-9-29）默认安装1.26，<br>
 
 ModSecurity-nginx-http3.sh 使用方法：<br>
 
