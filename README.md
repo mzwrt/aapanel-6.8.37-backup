@@ -24,14 +24,14 @@
 文件是基于宝塔的nginx.sh安装文件 基于debian 12 编写的兼容ubuntu系统<br>
 <br>
 注意：所有ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖<br>
-# nginx-1.26 ModSecurity brotli http3版<br>
+# nginx-1.27 ModSecurity brotli http3版<br>
 ModSecurity-nginx-http3.sh基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，将nginx修改成自定义字段和去除nginx版本号<br>
-ModSecurity-nginx-http3.sh是新版，最高支持1.26，默认开启http3，并且脚本已经升级lua到最新版（2024-9-29）默认安装1.26，<br>
+ModSecurity-nginx-http3.sh是新版，最高支持1.27，默认开启http3，并且脚本已经升级lua到最新版（2024-9-29）默认安装1.26，<br>
 
 ModSecurity-nginx-http3.sh 使用方法：<br>
 
 ```
- rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/refs/heads/main/ModSecurity-nginx-http3.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.26
+ rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/refs/heads/main/ModSecurity-nginx-http3.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.27
  ```
 <br>
 
