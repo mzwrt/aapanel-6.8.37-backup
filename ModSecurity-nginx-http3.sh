@@ -52,11 +52,15 @@ EOL
 
             # 修复换行符（确保文件是 Unix 格式）
             sed -i 's/\r//g' /www/server/panel/install/nginx_prepare.sh
+	    ############## 规范文件权限 ##############################
+	    chmod 600 /www/server/panel/install/nginx_prepare.sh
 
             # 创建 nginx_configure.pl 配置文件
             cat > /www/server/panel/install/nginx_configure.pl << 'EOL'
 --add-module=/www/server/nginx/src/ngx_devel_kit --add-module=/www/server/nginx/src/lua_nginx_module
 EOL
+############## 规范文件权限 ##############################
+chmod 600 /www/server/panel/install/nginx_configure.pl
 
             echo "Preparation scripts created successfully."
           
