@@ -1,0 +1,1343 @@
+#!/bin/bash
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+export PATH
+LANG=en_US.UTF-8
+
+######### 检测是否是root用户 ###################
+if [ "$(id -u)" -ne 0 ]; then
+  echo "此脚本需要以root用户运行。"
+  exit 1
+fi
+echo "你是以root用户运行此脚本。脚本继续运行"
+
+################### ARM安装lujit ######################
+# 检查系统架构是否是 ARM
+arch_lujit=$(uname -m)
+if [[ "$arch_lujit" == "aarch64" ]]; then
+    echo "ARM 架构 detected."
+  
+    # 提示用户是否继续执行准备脚本
+    read -p "检测到您是ARM架构CPU，是否安装lujit(nginx-lua)宝塔防火墙必备模块 (Y/N): " choice
+    case "$choice" in
+        [Yy]*)
+            echo "添加nginx-lujit安装脚本..."
+
+            # 创建 nginx_prepare.sh 脚本
+            cat > /www/server/panel/install/nginx_prepare.sh << 'EOL'
+#!/bin/bash
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+export PATH
+
+Install_LuaJIT
+
+wget -c -O luajit2-2.1-20241104.zip https://github.com/openresty/luajit2/archive/refs/tags/luajit2-2.1-20241104.zip
+unzip -o luajit2-2.1-20241104.zip
+if [ -e luajit2-2.1-20241104 ]; then
+    cd luajit2-2.1-20241104
+    make TARGET=arm64
+    make install
+    export LUAJIT_LIB=/usr/local/lib
+    export LUAJIT_INC=/usr/local/include/luajit-2.1
+    ln -sf /usr/local/lib/libluajit-5.1.so.2 /usr/local/lib64/libluajit-5.1.so.2
+    if [ `grep -c /usr/local/lib /etc/ld.so.conf` -eq 0 ]; then
+        echo "/usr/local/lib" >> /etc/ld.so.conf
+    fi
+    ldconfig
+    cd ..
+fi
+rm -rf luajit2-2.1-20241104
+
+Install_cjson
+EOL
+
+            # 修复换行符（确保文件是 Unix 格式）
+            sed -i 's/\r//g' /www/server/panel/install/nginx_prepare.sh
+	    ############## 规范文件权限 ##############################
+	    chmod 600 /www/server/panel/install/nginx_prepare.sh
+
+            # 创建 nginx_configure.pl 配置文件
+            cat > /www/server/panel/install/nginx_configure.pl << 'EOL'
+--add-module=/www/server/nginx/src/ngx_devel_kit --add-module=/www/server/nginx/src/lua_nginx_module
+EOL
+############## 规范文件权限 ##############################
+chmod 600 /www/server/panel/install/nginx_configure.pl
+
+            echo "Preparation scripts created successfully."
+          
+            # 运行准备脚本
+            #/www/server/panel/install/nginx_prepare.sh
+            ;;
+        [Nn]*)
+            echo "跳过安装lujit."
+            ;;
+        *)
+            echo "选择无效。退出."
+            exit 1
+            ;;
+    esac
+else
+    echo "您不是 ARM 架构，跳过安装lujit"
+fi
+################### ARM安装lujit ######################
+
+read -p "请输入将nginx伪装成什么名字 禁止使用任何特殊符号仅限英文大小写和空格（例如：OWASP WAF） 留空将不修改使用默认值 默认值是ngixn： " nginx_fake_name
+read -p "请输入自定义的nginx版本号（例如：5.1.24）留空将不修改使用默认版本号： " nginx_version_number
+
+public_file=/www/server/panel/install/public.sh
+. $public_file
+publicFileMd5=$(md5sum ${public_file} 2>/dev/null|awk '{print $1}')
+md5check="f94b33b66e8a6bc378245070e3d1b1b9"
+if [ "${publicFileMd5}" != "${md5check}"  ] && [ -z "${NODE_URL}" ]; then
+	wget -O Tpublic.sh https://node.aapanel.com/install/public.sh -T 20;
+	publicFileMd5=$(md5sum Tpublic.sh 2>/dev/null|awk '{print $1}')
+	if [ "${publicFileMd5}" == "${md5check}"  ]; then
+		\cp -rpa Tpublic.sh $public_file
+	fi
+	rm -f Tpublic.sh
+	. $public_file
+fi
+
+download_Url=$NODE_URL
+
+tengine='3.1.0'
+nginx_108='1.8.1'
+nginx_112='1.12.2'
+nginx_114='1.14.2'
+nginx_115='1.15.10'
+nginx_116='1.16.1'
+nginx_117='1.17.10'
+nginx_118='1.18.0'
+nginx_119='1.19.8'
+nginx_120='1.20.2'
+nginx_121='1.21.4'
+nginx_122='1.22.1'
+nginx_123='1.23.4'
+nginx_124='1.24.0'
+nginx_125='1.25.5'
+nginx_126='1.26.3'
+nginx_127='1.27.4'
+openresty='1.25.3.2'
+
+Root_Path=$(cat /var/bt_setupPath.conf)
+Setup_Path=$Root_Path/server/nginx
+run_path="/root"
+Is_64bit=$(getconf LONG_BIT)
+
+ARM_CHECK=$(uname -a | grep -E 'aarch64|arm|ARM')
+if [ "$2" == "1.24" ];then
+    ARM_CHECK=""
+    JEM_CHECK="disable"
+fi
+LUAJIT_VER="2.0.4"
+LUAJIT_INC_PATH="luajit-2.0"
+
+if [ "${ARM_CHECK}" ]; then
+    LUAJIT_VER="2.1.0-beta3"
+    LUAJIT_INC_PATH="luajit-2.1"
+fi
+
+loongarch64Check=$(uname -a | grep loongarch64)
+if [ "${loongarch64Check}" ]; then
+    wget -O nginx.sh ${download_Url}/install/0/loongarch64/nginx.sh && sh nginx.sh $1 $2
+    exit
+fi
+
+Set_Centos7_Repo(){
+    if [ -f "/etc/yum.repos.d/docker-ce.repo" ];then
+        mv /etc/yum.repos.d/docker-ce.repo /etc/yum.repos.d/docker-ce.repo_backup
+    fi
+	MIRROR_CHECK=$(cat /etc/yum.repos.d/CentOS-Base.repo |grep "[^#]mirror.centos.org")
+	if [ "${MIRROR_CHECK}" ] && [ "${is64bit}" == "64" ];then
+		\cp -rpa /etc/yum.repos.d/ /etc/yumBak
+		sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*.repo
+		sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.epel.cloud|g' /etc/yum.repos.d/CentOS-*.repo
+	fi
+
+	TSU_MIRROR_CHECK=$(cat /etc/yum.repos.d/CentOS-Base.repo |grep "tuna.tsinghua.edu.cn")
+	if [ "${TSU_MIRROR_CHECK}" ];then
+		\cp -rpa /etc/yum.repos.d/ /etc/yumBak
+		sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*.repo
+		sed -i 's|#baseurl=https://mirrors.tuna.tsinghua.edu.cn|baseurl=http://vault.epel.cloud|g' /etc/yum.repos.d/CentOS-*.repo
+		sed -i 's|#baseurl=http://mirrors.tuna.tsinghua.edu.cn|baseurl=http://vault.epel.cloud|g' /etc/yum.repos.d/CentOS-*.repo
+	fi
+	
+	ALI_CLOUD_CHECK=$(grep Alibaba /etc/motd)
+	Tencent_Cloud=$(cat /etc/hostname |grep -E VM-[0-9]+-[0-9]+)
+	if [ "${ALI_CLOUD_CHECK}" ] || [ "${Tencent_Cloud}" ];then
+		return
+	fi
+	
+	yum install tree -y
+	if [ "$?" != "0" ] ;then
+		TAR_CHECK=$(which tree)
+		if [ "$?" == "0" ] ;then
+			\cp -rpa /etc/yum.repos.d/ /etc/yumBak
+			if [ -z "${download_Url}" ];then
+				download_Url="http://node.aapanel.com"
+			fi
+			curl -Ss --connect-timeout 5 -m 60 -O ${download_Url}/src/el7repo.tar.gz
+			rm -f /etc/yum.repos.d/*.repo
+			tar -xvzf el7repo.tar.gz -C /etc/yum.repos.d/
+		fi
+	fi
+
+	yum install tree -y
+	if [ "$?" != "0" ] ;then
+		sed -i "s/vault.epel.cloud/mirrors.cloud.tencent.com/g" /etc/yum.repos.d/*.repo
+	fi
+}
+
+Centos7Check=$(cat /etc/redhat-release | grep ' 7.' | grep -iE 'centos|Red Hat')
+if [ "${Centos7Check}" ];then
+    Set_Centos7_Repo
+fi
+
+# if [ "$2" == "1.25" ];then
+#     ulimit -n 10240
+#     wget -O nginx.sh ${download_Url}/install/0/nginx5.sh 
+#     . nginx.sh $1 $2
+#     exit
+# fi
+
+#HUAWEI_CLOUD_EULER=$(cat /etc/os-release |grep '"Huawei Cloud EulerOS 1')
+#EULER_OS=$(cat /etc/os-release |grep "EulerOS 2.0 ")
+#if [ "${HUAWEI_CLOUD_EULER}" ] || [ "${EULER_OS}" ];then
+#        wget -O nginx.sh ${download_Url}/install/1/nginx.sh && sh nginx.sh $1 $2
+#        exit
+#fi
+
+if [ -z "${cpuCore}" ]; then
+    cpuCore="1"
+fi
+
+Error_Send(){
+    MIN_O=$(date +%M)
+    if [ $((MIN_O % 2)) -eq 0 ]; then
+        exit 1
+    fi
+    if [ ! -f "/tmp/nginx_i.pl" ];then
+        touch /tmp/nginx_i.pl
+        TIME=$(date "+%Y-%m-%d %H:%M:%S")
+        P_VERSION=$(cat /www/server/panel/class/common.py|grep g.version|grep -oE 8.0.[0-9]+)
+        ls /etc/init.d/ | xargs -n 5 | pr -t -5 > /tmp/nginx_err.pl
+        cat /tmp/pack_i.pl >> /tmp/nginx_err.pl
+        cat /tmp/gd_i.pl >> /tmp/nginx_err.pl
+        tail -n 15 /tmp/nginx_config.pl /tmp/nginx_make.pl /tmp/nginx_install.pl >> /tmp/nginx_err.pl
+        echo  Bit:${SYS_BIT} Mem:${MEM_TOTAL}M Core:${CPU_INFO} gcc:${GCC_VER} cmake:${CMAKE_VER} >> /tmp/nginx_err.pl
+        echo ${SYS_VERSION} ${SYS_INFO} >> /tmp/nginx_err.pl
+        echo "$nginxVersion install Failed" >> /tmp/nginx_err.pl
+        ERR_MSG=$(cat /tmp/nginx_err.pl)
+        rm -f /tmp/nginx_config.pl /tmp/nginx_make.pl /tmp/nginx_install.pl /tmp/nginx_err.pl /tmp/pack_i.pl /tmp/gd_i.pl
+        #### 此处会提交日志到宝塔服务器，注释掉 ###############
+        #curl --request POST \
+        #  --url "http://api.bt.cn/bt_error/index.php" \
+        #  --data "UID=89045" \
+        #  --data "PANEL_VERSION=${P_VERSION}"\
+        #  --data "REQUEST_DATE=${TIME}" \
+        #  --data "OS_VERSION=${SYS_VERSION}" \
+        #  --data "REMOTE_ADDR=192.168.168.1641" \
+        #  --data "REQUEST_URI=nginx" \
+        #  --data "USER_AGENT=${SYS_INFO}" \
+        #  --data "ERROR_INFO=${ERR_MSG}" \
+        #  --data "PACK_TIME=${TIME}" \
+        #  --data "TYPE=3"
+    fi
+    exit 1
+}
+System_Lib() {
+    if [ "${PM}" == "yum" ] || [ "${PM}" == "dnf" ]; then
+        Pack="gcc gcc-c++ curl curl-devel libtermcap-devel ncurses-devel libevent-devel readline-devel libuuid-devel gd-devel libxml2-devel libxslt-devel"
+        ${PM} install ${Pack} -y
+        yum install zlib-devel -y
+        yum -y install gcc gcc-c++ autoconf automake
+        yum reinstall gd gd-devel -y 2>&1 >> /tmp/pack_i.pl
+        ls /usr/include/gd.h /usr/lib64/libgd.so.3  2>&1 |tee /tmp/gd_i.pl
+        wget -O fix_install.sh $download_Url/tools/fix_install.sh
+        nohup bash fix_install.sh > /www/server/panel/install/fix.log 2>&1 &
+    elif [ "${PM}" == "apt-get" ]; then
+        apt-get update
+        	########################### 安装ModSecurity必备软件包 ####################################################
+        	apt install -y apt-utils autoconf automake build-essential git ssdeep libpcre2-dev libpcre2-8-0  libcurl4-openssl-dev libgeoip-dev liblmdb-dev libtool libxml2-dev libyajl-dev pkgconf wget zlib1g-dev liblua5.3-dev libmaxminddb0 libmaxminddb-dev
+
+        LIBCURL_VER=$(dpkg -l | grep libx11-6 | awk '{print $3}')
+        if [ "${LIBCURL_VER}" == "2:1.6.9-2ubuntu1.3" ]; then
+            apt remove libx11* -y
+            apt install libx11-6 libx11-dev libx11-data -y
+        fi
+        apt-get update -y
+        Pack="gcc g++ libgd3 libgd-dev libevent-dev libncurses5-dev libreadline-dev uuid-dev"
+        ${PM} install ${Pack} -y
+        apt-get install libxslt1-dev -y 2>&1 >> /tmp/pack_i.pl
+        apt-get install libgd-dev -y 2>&1 >> /tmp/pack_i.pl
+        apt-get install libxml2-dev -y 2>&1 >> /tmp/pack_i.pl
+        apt-get install zlib1g-dev -y 
+    fi
+
+}
+
+Service_Add() {
+    if [ "${PM}" == "yum" ] || [ "${PM}" == "dnf" ]; then
+        chkconfig --add nginx
+        chkconfig --level 2345 nginx on
+    elif [ "${PM}" == "apt-get" ]; then
+        update-rc.d nginx defaults
+    fi
+	if [ "$?" == "127" ];then
+		wget -O /usr/lib/systemd/system/nginx.service ${download_Url}/init/systemd/nginx.service
+		systemctl enable nginx.service
+	fi
+}
+Service_Del() {
+    if [ "${PM}" == "yum" ] || [ "${PM}" == "dnf" ]; then
+        chkconfig --del nginx
+        chkconfig --level 2345 nginx off
+    elif [ "${PM}" == "apt-get" ]; then
+        update-rc.d nginx remove
+    fi
+}
+Set_Time() {
+    BASH_DATE=$(stat nginx.sh | grep Modify | awk '{print $2}' | tr -d '-')
+    SYS_DATE=$(date +%Y%m%d)
+    [ "${SYS_DATE}" -lt "${BASH_DATE}" ] && date -s "$(curl https://www.bt.cn//api/index/get_date)"
+}
+
+Install_Jemalloc() {
+    # 获取最新版本号
+    jemalloc_version=$(curl -s https://api.github.com/repos/jemalloc/jemalloc/releases/latest | grep '"tag_name":' | cut -d '"' -f 4)
+
+    # 调试输出版本号
+    echo "Latest jemalloc version: ${jemalloc_version}"
+
+    # 设置下载链接
+    jemalloc_download_url="https://github.com/jemalloc/jemalloc/releases/download/${jemalloc_version}/jemalloc-${jemalloc_version}.tar.bz2"
+
+    # 调试输出下载链接
+    echo "Downloading from: ${jemalloc_download_url}"
+
+    if [ ! -f '/usr/local/lib/libjemalloc.so' ]; then
+        wget -O jemalloc.tar.bz2 "${jemalloc_download_url}" || { echo "Download failed"; return 1; }
+        tar -xvf jemalloc.tar.bz2 || { echo "Extraction failed"; return 1; }
+
+        # 这里使用正确的目录名称
+        cd "jemalloc-${jemalloc_version#v}" || { echo "Directory change failed"; return 1; }  # 去掉版本号前的 "v"
+
+        ./configure
+        make && make install
+        ldconfig
+        cd ..
+        rm -rf jemalloc*
+    fi
+}
+
+# 这个是原版上面是修改版
+#Install_Jemalloc() {
+#    if [ ! -f '/usr/local/lib/libjemalloc.so' ]; then
+#        wget -O jemalloc-5.0.1.tar.bz2 ${download_Url}/src/jemalloc-5.0.1.tar.bz2
+#        tar -xvf jemalloc-5.0.1.tar.bz2
+#        cd jemalloc-5.0.1
+#        ./configure
+#        make && make install
+#        ldconfig
+#        cd ..
+#        rm -rf jemalloc*
+#    fi
+#}
+
+############################ LuaJIT从luajit2-2.1-20230410升级到luajit2-2.1-20240815 #####################################
+Install_LuaJIT2(){
+    LUAJIT_INC_PATH="luajit-2.1"
+    wget -c -O luajit2-2.1-20250117.zip https://github.com/openresty/luajit2/archive/refs/tags/v2.1-20250117.zip
+    unzip -o luajit2-2.1-20250117.zip
+    cd luajit2-2.1-20250117
+    make -j${cpuCore}
+    make install
+    cd .. 
+    rm -rf luajit2-2.1-20250117*
+    ln -sf /usr/local/lib/libluajit-5.1.so.2 /usr/local/lib64/libluajit-5.1.so.2
+    LD_SO_CHECK=$(cat /etc/ld.so.conf|grep /usr/local/lib)
+    if [ -z "${LD_SO_CHECK}" ];then
+         echo "/usr/local/lib" >>/etc/ld.so.conf
+    fi
+    ldconfig
+}
+
+#Install_LuaJIT2(){
+#    LUAJIT_INC_PATH="luajit-2.1"
+#    wget -c -O luajit2-2.1-20230410.zip ${download_Url}/src/luajit2-2.1-20230410.zip
+#    unzip -o luajit2-2.1-20230410.zip
+#    cd luajit2-2.1-20230410
+#    make -j${cpuCore}
+#    make install
+#    cd .. 
+#    rm -rf luajit2-2.1-20230410*
+#    ln -sf /usr/local/lib/libluajit-5.1.so.2 /usr/local/lib64/libluajit-5.1.so.2
+#    LD_SO_CHECK=$(cat /etc/ld.so.conf|grep /usr/local/lib)
+#    if [ -z "${LD_SO_CHECK}" ];then
+#         echo "/usr/local/lib" >>/etc/ld.so.conf
+#    fi
+#    ldconfig
+#}
+############################ LuaJIT END #####################################
+
+
+
+Install_LuaJIT() {
+    if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "tengine" ] || [ "${version}" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
+        Install_LuaJIT2
+        return
+    fi
+    OEPN_LUAJIT=$(cat /usr/local/include/luajit-2.1/luajit.h|grep 2022)
+    if [ ! -f '/usr/local/lib/libluajit-5.1.so' ] || [ ! -f "/usr/local/include/${LUAJIT_INC_PATH}/luajit.h" ] || [ "${OEPN_LUAJIT}" ]; then
+        wget -c -O LuaJIT-${LUAJIT_VER}.tar.gz ${download_Url}/install/src/LuaJIT-${LUAJIT_VER}.tar.gz -T 10
+        tar xvf LuaJIT-${LUAJIT_VER}.tar.gz
+        cd LuaJIT-${LUAJIT_VER}
+        make linux
+        make install
+        cd ..
+        rm -rf LuaJIT-*
+        export LUAJIT_LIB=/usr/local/lib
+        export LUAJIT_INC=/usr/local/include/${LUAJIT_INC_PATH}/
+        ln -sf /usr/local/lib/libluajit-5.1.so.2 /usr/local/lib64/libluajit-5.1.so.2
+        LD_SO_CHECK=$(cat /etc/ld.so.conf|grep /usr/local/lib)
+        if [ -z "${LD_SO_CHECK}" ];then
+             echo "/usr/local/lib" >>/etc/ld.so.conf
+        fi
+        ldconfig
+    fi
+}
+Install_cjson() {
+    if [ ! -f /usr/local/lib/lua/5.1/cjson.so ]; then
+        wget -O lua-cjson-2.1.0.tar.gz $download_Url/install/src/lua-cjson-2.1.0.tar.gz -T 20
+        tar xvf lua-cjson-2.1.0.tar.gz
+        rm -f lua-cjson-2.1.0.tar.gz
+        cd lua-cjson-2.1.0
+        make
+        make install
+        cd ..
+        rm -rf lua-cjson-2.1.0
+    fi
+}
+Download_Src() {
+    mkdir -p ${Setup_Path}
+    cd ${Setup_Path}
+    rm -rf ${Setup_Path}/src
+    if [ "${version}" == "tengine" ] || [ "${version}" == "openresty" ]; then
+        wget -O ${Setup_Path}/src.tar.gz ${download_Url}/src/${version}-${nginxVersion}.tar.gz -T20
+        tar -xvf src.tar.gz
+        mv ${version}-${nginxVersion} src
+    else
+        wget -O ${Setup_Path}/src.tar.gz ${download_Url}/src/nginx-${nginxVersion}.tar.gz -T20
+        tar -xvf src.tar.gz
+        tar -xvf src.tar.gz
+        mv nginx-${nginxVersion} src
+    # 规范文件权限防止出现无效用户文件
+    # 因为宝塔文件设置并不严谨必须修改
+    # 根据CIS NGINX 基准测试v2.1.0的2.3.1
+    # 将所有权仅设置为 root 组和 root 用户中的用户将减少对 nginx 配置文件进行未经授权修改的可能性。
+    # 官方默认文件权限是502用户属于无效用户
+    chown -R root:root /www/server/nginx/src
+ 
+########################### 替换 Nginx 版本信息和错误页标签 #######################################
+if [ -n "$nginx_fake_name" ] || [ -n "$nginx_version_number" ]; then
+    # 处理特殊字符
+    nginx_fake_name=$(echo "$nginx_fake_name" | sed 's/[&/\]/\\&/g')
+    nginx_version_number=$(echo "$nginx_version_number" | sed 's/[&/\]/\\&/g')
+
+    # 替换 HTTP 响应头的 server 参数
+    if [ -n "$nginx_fake_name" ]; then
+        sed -i "s/static u_char ngx_http_server_string\[\] = \"Server: nginx\" CRLF;/static u_char ngx_http_server_string\[\] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_full_string\[\] = \"Server: \" NGINX_VER CRLF;/static u_char ngx_http_server_full_string\[\] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+        sed -i "s/static u_char ngx_http_server_build_string\[\] = \"Server: \" NGINX_VER_BUILD CRLF;/static u_char ngx_http_server_build_string\[\] = \"Server: ${nginx_fake_name}\" CRLF;/g" /www/server/nginx/src/src/http/ngx_http_header_filter_module.c
+    fi
+
+    # 替换 默认错误页的底部标签
+    if [ -n "$nginx_fake_name" ]; then
+        sed -i "s/<hr><center>\" NGINX_VER_BUILD \"<\/center>\" CRLF/<hr><center>\" ${nginx_fake_name} \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+        sed -i "s/<hr><center>nginx<\/center>\" CRLF/<hr><center>${nginx_fake_name}<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+        sed -i "s/<hr><center>\" NGINX_VER \"<\/center>\" CRLF/<hr><center>\" ${nginx_fake_name} \"<\/center>\" CRLF/" /www/server/nginx/src/src/http/ngx_http_special_response.c
+    fi
+
+    # 替换 整体宏标签
+    # 注释掉是因为不需要替换，用户能获取到的只有server标签和错误页标签显示的名字，根据CIS安全基准这已经足够安全，符合所有安全基准
+    # 如果需要完全隐藏nginx任何地方都不能显示nginx，而是显示你的自定义名可以取消注释
+    # if [ -n "$nginx_version_number" ]; then
+    #     sed -i "s/#define NGINX_VERSION      \".*\"/#define NGINX_VERSION      \"${nginx_version_number}\"/" /www/server/nginx/src/src/core/nginx.h
+    # fi
+
+    # if [ -n "$nginx_fake_name" ]; then
+    #     sed -i "s/#define NGINX_VER          \"nginx\/\" NGINX_VERSION/#define NGINX_VER          \"${nginx_fake_name}\"/" /www/server/nginx/src/src/core/nginx.h
+    # fi
+
+    # 输出替换结果
+    if [ -n "$nginx_fake_name" ]; then
+        echo "Nginx 伪装名称已设置为: $nginx_fake_name"
+    fi
+
+    if [ -n "$nginx_version_number" ]; then
+        echo "自定义版本号已设置为: $nginx_version_number"
+    fi
+else
+    echo "未输入任何修改信息，文件未做任何更改。"
+fi
+################################### 替换nginx信息 EMD #######################################################
+
+    cd src
+
+    if [ -z "${GMSSL}" ]; then
+        TLSv13_NGINX=$(echo ${nginxVersion} | tr -d '.' | cut -c 1-3)
+        if [ "${TLSv13_NGINX}" -ge "115" ] && [ "${TLSv13_NGINX}" != "181" ]; then
+            opensslVer="1.1.1w"
+        else
+            opensslVer="1.0.2u"
+        fi
+        # if [ "$version" == "1.23" ];then
+        #     opensslVer="3.0.5"
+        # fi
+        ################################### 更新openssl 3.0.16版本 ##############################################
+        wget -O openssl.tar.gz https://www.openssl.org/source/openssl-3.0.16.tar.gz -T 20
+        tar -xvf openssl.tar.gz
+        mv openssl-3.0.16 openssl
+        rm -f openssl.tar.gz
+    else
+        wget -O GmSSL-master.zip ${download_Url}/src/GmSSL-master.zip
+        unzip GmSSL-master.zip
+        mv GmSSL-master openssl
+        rm -f GmSSL-master.zip
+    fi
+
+    ################################### 更新pcre-8.45版本 ########################################
+    pcre_version="8.45"
+    wget -O pcre-8.45.zip https://nchc.dl.sourceforge.net/project/pcre/pcre/8.45/pcre-8.45.zip -T 20
+    unzip -o pcre-8.45.zip
+    #mv pcre-8.45 pcre
+    rm -f pcre-8.45.zip
+    
+    ################################# 添加 brotli 模块 ##############################################
+   #下载brotli
+   git clone https://github.com/google/ngx_brotli.git
+   cd ngx_brotli
+   #更新brotli
+   git submodule update --init
+   cd ..
+   ################################# brotli END ##################################################
+   
+      ################################ 添加 ModSecurity-nginx ########################################
+# 下载 ModSecurity 源码最新稳定版本
+mkdir -p /www/server/nginx/owasp
+chown -R root:root /www/server/nginx/owasp
+
+modsecurity_dir="/usr/local/modsecurity"
+
+if [ ! -d "$modsecurity_dir" ]; then
+    echo "ModSecurity 目录不存在，开始安装..."
+    # 未检测到/usr/local/modsecurity说明未安装则运行以下命令安装ModSecurity
+    cd /www/server/nginx/owasp
+    # 安装libmaxminddb-dev解决以下错误
+    # configure: MaxMind library was not found
+    #c onfigure: Nothing about LMDB was informed during the configure phase. Trying to detect it on the platform...
+    # configure: LMDB is disabled by default.
+    #sudo apt install libyajl-dev libgeoip-dev liblmdb-dev liblua5.3-dev libmaxminddb0 libmaxminddb-dev -y
+    git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity ModSecurity
+    cd ModSecurity
+    git submodule init
+    git submodule update
+    # 配置 ModSecurity
+    ./build.sh
+    ./configure
+    make
+    sudo make install
+    # 配置文件改名
+    if [ -f "/www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended" ]; then
+        cp "/www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended" "/www/server/nginx/owasp/ModSecurity/modsecurity.conf"
+    fi
+    else
+    echo "ModSecurity 目录已存在，仅运行 git clone..."
+    cd /www/server/nginx/owasp
+    git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity ModSecurity
+    # 配置文件改名
+    if [ -f "/www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended" ]; then
+        cp "/www/server/nginx/owasp/ModSecurity/modsecurity.conf-recommended" "/www/server/nginx/owasp/ModSecurity/modsecurity.conf"
+    fi
+fi
+
+# 进入 ModSecurity 源码目录
+cd /www/server/nginx/owasp
+
+# 下载 ModSecurity-nginx 模块
+git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
+
+# 设置目录和文件的所有者为 root:root
+chown -R root:root /www/server/nginx/owasp/ModSecurity-nginx
+
+echo "ModSecurity 和 ModSecurity-nginx 安装及配置完成。"
+
+
+#################### OWASP核心规则集下载 ###########################################
+cd /www/server/nginx/owasp
+
+# 获取最新版本号
+LATEST_VERSION=$(curl -s "https://api.github.com/repos/coreruleset/coreruleset/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
+if [ -z "$LATEST_VERSION" ]; then
+    echo "无法获取最新版本号。请检查网络连接或稍后重试。"
+    exit 1
+fi
+LATEST_VERSION_NO_V="${LATEST_VERSION//v}"
+# 构建下载链接
+DOWNLOAD_URL="https://github.com/coreruleset/coreruleset/archive/refs/tags/$LATEST_VERSION.tar.gz"
+
+# 下载最新版本的核心规则集
+echo "正在下载最新版本：$LATEST_VERSION"
+if curl -L -o "coreruleset-$LATEST_VERSION.tar.gz" "$DOWNLOAD_URL"; then
+    echo "下载完成：coreruleset-$LATEST_VERSION.tar.gz"
+
+    # 解压文件
+    tar -zxvf "coreruleset-$LATEST_VERSION.tar.gz"
+
+    # 检查并重命名文件夹
+    if [ -d "coreruleset-$LATEST_VERSION_NO_V" ]; then
+        mv "coreruleset-$LATEST_VERSION_NO_V" "owasp-rules"
+
+        # 修改文件夹权限
+        chown -R root:root "owasp-rules"
+
+        # 复制文件（如果存在）
+        if [ -f "/www/server/nginx/owasp/owasp-rules/crs-setup.conf.example" ]; then
+            cp "/www/server/nginx/owasp/owasp-rules/crs-setup.conf.example" "/www/server/nginx/owasp/owasp-rules/crs-setup.conf"
+        fi
+
+        # 删除下载的压缩包
+        rm -f "coreruleset-$LATEST_VERSION.tar.gz"
+    else
+        echo "未能找到目录 coreruleset-$LATEST_VERSION_NO_V，无法重命名。"
+        exit 1
+    fi
+else
+    echo "下载最新版本 $LATEST_VERSION 失败。"
+    exit 1
+fi
+################### OWASP核心规则集下载-END##################
+
+# 创建引入文件
+# 修改配置文件名
+mkdir -p /www/server/nginx/owasp/conf
+
+# 添加wordpress常用的nginx拒绝规则配置文件
+wget -c -O /www/server/nginx/owasp/conf/nginx-wordpress.conf https://gist.githubusercontent.com/nfsarmento/57db5abba08b315b67f174cd178bea88/raw/b0768871c3349fdaf549a24268cb01b2be145a6a/nginx-wordpress.conf -T 20
+
+
+# 创建引入文件conf
+cat << EOF > /www/server/nginx/owasp/conf/main.conf
+# ModSecurity存放路径：/www/server/nginx/owasp/ModSecurity
+# 下载地址：https://github.com/SpiderLabs/ModSecurity
+#
+# ModSecurity-nginx这个是nginx连接器
+# 存放路径：/www/server/nginx/owasp/ModSecurity-nginx
+# 下载地址：https://github.com/SpiderLabs/ModSecurity-nginx
+#
+# OWASP CRS rules 规则文件默认下载最版本
+# 存放文件在 /www/server/nginx/owasp/owasp-rules
+# 下载地址：https://github.com/coreruleset/coreruleset/releases
+
+# 引入modsecurity 主要配置文件
+Include /www/server/nginx/owasp/ModSecurity/modsecurity.conf
+
+# OWASP CRS 规则主要配置文件
+# Include /www/server/nginx/owasp/owasp-rules/crs-setup.conf
+
+# 引入 OWASP CRS 规则主文件
+# 所有规则文件都在 /www/server/nginx/owasp/owasp-rules 里面
+# 按照自己的需要添加规则，下面规则是根据官方文档添加所有conf规则
+# 注意/www/server/nginx/owasp/owasp-rules/rules/*.conf不可用于生产环境
+# Include /www/server/nginx/owasp/owasp-rules/rules/*.conf
+
+# Other ModSecurity Rules
+EOF
+
+# 规范文件权限
+chmod 750 /www/server/nginx/modules
+chmod 640 /www/server/nginx/modules/ngx_http_modsecurity_module.so
+chmod 600 /www/server/nginx/owasp/ModSecurity/modsecurity.conf
+chmod 600 /www/server/nginx/owasp/owasp-rules/crs-setup.conf
+chmod 600 /www/server/nginx/owasp/conf/main.conf
+chmod 600 /www/server/nginx/owasp/conf/nginx-wordpress.conf
+chmod 600 /www/server/nginx/owasp/owasp-rules/rules/*.conf
+find /www/server/nginx/owasp/owasp-rules/ -type f -exec chmod 600 {} \;
+cd /www/server/nginx/src
+######################## ModSecurity END ################################
+
+    wget -O ngx_cache_purge.tar.gz ${download_Url}/src/ngx_cache_purge-2.3.tar.gz
+    tar -zxvf ngx_cache_purge.tar.gz
+    mv ngx_cache_purge-2.3 ngx_cache_purge
+    rm -f ngx_cache_purge.tar.gz
+
+    wget -O nginx-sticky-module.zip ${download_Url}/src/nginx-sticky-module.zip
+    unzip -o nginx-sticky-module.zip
+    rm -f nginx-sticky-module.zip
+
+    wget -O nginx-http-concat.zip ${download_Url}/src/nginx-http-concat-1.2.2.zip
+    unzip -o nginx-http-concat.zip
+    mv nginx-http-concat-1.2.2 nginx-http-concat
+    rm -f nginx-http-concat.zip
+
+########################## lua_nginx_module模块从0.10.24升级到0.10.28 ##############################
+
+    #lua_nginx_module
+#    LuaModVer="0.10.13"
+#    if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "tengine" ] ||  [ "${version}" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
+#        LuaModVer="0.10.24"
+#    fi
+#    wget -c -O lua-nginx-module-${LuaModVer}.zip ${download_Url}/src/lua-nginx-module-${LuaModVer}.zip
+#    unzip -o lua-nginx-module-${LuaModVer}.zip
+#    mv lua-nginx-module-${LuaModVer} lua_nginx_module
+#    rm -f lua-nginx-module-${LuaModVer}.zip
+    
+# lua_nginx_module
+    if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "tengine" ] ||  [ "${version}" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
+    LuaModVer="0.10.28"
+    LuaModuleDownloadUrl="https://github.com/openresty/lua-nginx-module/archive/refs/tags/v${LuaModVer}.zip"
+else
+    LuaModVer="0.10.13"
+    LuaModuleDownloadUrl="${download_Url}/src/lua-nginx-module-${LuaModVer}.zip"  # 使用初始定义的 download_Url
+fi
+
+# 下载并解压 Lua 模块
+wget -c -O lua-nginx-module-${LuaModVer}.zip ${LuaModuleDownloadUrl}
+unzip -o lua-nginx-module-${LuaModVer}.zip
+mv lua-nginx-module-${LuaModVer} lua_nginx_module
+rm -f lua-nginx-module-${LuaModVer}.zip
+########################## lua_nginx_module END ##############################
+
+########################## ngx_devel_kit模块从0.3.1升级到0.3.4 ##############################
+
+    #ngx_devel_kit
+#    NgxDevelKitVer="0.3.1"
+#    wget -c -O ngx_devel_kit-${NgxDevelKitVer}.zip ${download_Url}/src/ngx_devel_kit-${NgxDevelKitVer}.zip
+#    unzip -o ngx_devel_kit-${NgxDevelKitVer}.zip
+#    mv ngx_devel_kit-${NgxDevelKitVer} ngx_devel_kit
+#    rm -f ngx_devel_kit-${NgxDevelKitVer}.zip
+
+    #ngx_devel_kit
+    NgxDevelKitVer="0.3.4"
+    wget -c -O ngx_devel_kit-${NgxDevelKitVer}.zip https://github.com/vision5/ngx_devel_kit/archive/refs/tags/v0.3.4.zip
+    unzip -o ngx_devel_kit-${NgxDevelKitVer}.zip
+    mv ngx_devel_kit-${NgxDevelKitVer} ngx_devel_kit
+    rm -f ngx_devel_kit-${NgxDevelKitVer}.zip
+########################## ngx_devel_kit END ##############################
+
+    #nginx-dav-ext-module
+    NgxDavVer="3.0.0"
+    wget -c -O nginx-dav-ext-module-${NgxDavVer}.tar.gz ${download_Url}/src/nginx-dav-ext-module-${NgxDavVer}.tar.gz
+    tar -xvf nginx-dav-ext-module-${NgxDavVer}.tar.gz
+    mv nginx-dav-ext-module-${NgxDavVer} nginx-dav-ext-module
+    rm -f nginx-dav-ext-module-${NgxDavVer}.tar.gz
+    
+    wget -c -O ngx_http_substitutions_filter_module-master.zip ${download_Url}/src/ngx_http_substitutions_filter_module-master.zip
+    unzip -o ngx_http_substitutions_filter_module-master.zip
+    rm -f ngx_http_substitutions_filter_module-master.zip
+
+
+    if [ "${Is_64bit}" = "64" ]; then
+        if [ "${version}" == "1.15" ] || [ "${version}" == "1.17" ] || [ "${version}" == "tengine" ]; then
+            NGX_PAGESPEED_VAR="1.13.35.2"
+            wget -O ngx-pagespeed-${NGX_PAGESPEED_VAR}.tar.gz ${download_Url}/src/ngx-pagespeed-${NGX_PAGESPEED_VAR}.tar.gz
+            tar -xvf ngx-pagespeed-${NGX_PAGESPEED_VAR}.tar.gz
+            mv ngx-pagespeed-${NGX_PAGESPEED_VAR} ngx-pagespeed
+            rm -f ngx-pagespeed-${NGX_PAGESPEED_VAR}.tar.gz
+        fi
+    fi
+}
+Install_Configure() {
+    Run_User="www"
+    wwwUser=$(cat /etc/passwd | grep www)
+    if [ "${wwwUser}" == "" ]; then
+        groupadd ${Run_User}
+        useradd -s /sbin/nologin -g ${Run_User} ${Run_User}
+    fi
+
+    [ -f "/www/server/panel/install/nginx_prepare.sh" ] && . /www/server/panel/install/nginx_prepare.sh
+    [ -f "/www/server/panel/install/nginx_configure.pl" ] && ADD_EXTENSION=$(cat /www/server/panel/install/nginx_configure.pl)
+    if [ -f "/usr/local/lib/libjemalloc.so" ] && [ -z "${ARM_CHECK}" ] && [ -z "${JEM_CHECK}" ]; then
+        jemallocLD="--with-ld-opt="-ljemalloc""
+    fi
+
+    if [ "${version}" == "1.8" ]; then
+        ENABLE_HTTP2="--with-http_spdy_module"
+    else
+        ENABLE_HTTP2="--with-http_v2_module --with-stream --with-stream_ssl_module --with-stream_ssl_preread_module"
+    fi
+
+    WebDav_NGINX=$(echo ${nginxVersion} | tr -d '.' | cut -c 1-3)
+    if [ "${WebDav_NGINX}" -ge "114" ] && [ "${WebDav_NGINX}" != "181" ]; then
+        ENABLE_WEBDAV="--with-http_dav_module --add-module=${Setup_Path}/src/nginx-dav-ext-module"
+    fi
+
+    if [ "${version}" == "openresty" ]; then
+        ENABLE_LUA="--with-luajit"
+    elif [ -z "${ARM_CHECK}" ] && [ -f "/usr/local/include/${LUAJIT_INC_PATH}/luajit.h" ]; then
+        ENABLE_LUA="--add-module=${Setup_Path}/src/ngx_devel_kit --add-module=${Setup_Path}/src/lua_nginx_module"
+    fi
+	
+    ENABLE_STICKY="--add-module=${Setup_Path}/src/nginx-sticky-module"
+	if [ "$version" == "1.23" ] || [ "$version" == "1.24" ] || [ "${version}" == "tengine" ] || [ "${version}" == "openresty" ] || [ "$version" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
+        ENABLE_STICKY=""
+	fi
+
+    if [ "$version" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
+        ENABLE_HTTP3="--with-http_v3_module"
+    fi
+
+    name=nginx
+    i_path=/www/server/panel/install/$name
+
+    i_args=$(cat $i_path/config.pl | xargs)
+    i_make_args=""
+    for i_name in $i_args; do
+        init_file=$i_path/$i_name/init.sh
+        if [ -f $init_file ]; then
+            bash $init_file
+        fi
+
+        args_file=$i_path/$i_name/args.pl
+        if [ -f $args_file ]; then
+            args_string=$(cat $args_file)
+            i_make_args="$i_make_args $args_string"
+        fi
+    done
+
+    cd ${Setup_Path}/src
+
+    # if [ "${GMSSL}" ];then
+    # 	sed -i "s/$OPENSSL\/.openssl\//$OPENSSL\//g" auto/lib/openssl/conf
+    # fi
+
+    export LUAJIT_LIB=/usr/local/lib
+    export LUAJIT_INC=/usr/local/include/${LUAJIT_INC_PATH}/
+    export LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH
+    
+    # 规范文件权限防止出现无效用户文件
+    # 因为宝塔文件设置并不严谨必须修改
+    # 根据CIS NGINX 基准测试v2.1.0的2.3.1
+    # 将所有权仅设置为 root 组和 root 用户中的用户将减少对 nginx 配置文件进行未经授权修改的可能性。
+    chown -R root:root /www/server/nginx/src
+    
+    # 删除弃用的ipv6
+    # 删除自带的webdav模块 ${ENABLE_WEBDAV}
+    # 添加优化参数 --with-threads --with-file-aio  --with-cc-opt='-O2 -fPIE --param=ssp-buffer-size=4 -fstack-protector -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-E -Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now'
+    # 添加ngx_brotli模块 --add-module=/www/server/nginx/src/ngx_brotli
+    # 添加ModSecurity-nginx静态模块 --add-module=/www/server/nginx/owasp/ModSecurity-nginx 如果需要根据官方文档编译成动态模块修改成 --add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx 动态模块需要根据官方文档引入.so文件
+
+    ./configure --user=www --group=www --with-threads --with-file-aio --with-cc-opt='-O2 -fPIE  -fPIC --param=ssp-buffer-size=4 -fstack-protector -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -march=native -mtune=native' --with-ld-opt='-Wl,-E -flto -march=native -Bsymbolic-functions -fPIE -fPIC -pie -Wl,-z,relro -Wl,-z,now' --prefix=${Setup_Path} ${ENABLE_LUA} --add-module=${Setup_Path}/src/ngx_cache_purge ${ENABLE_STICKY} --with-openssl=${Setup_Path}/src/openssl --with-pcre=pcre-${pcre_version} ${ENABLE_HTTP2} --with-http_stub_status_module --with-http_ssl_module --with-http_image_filter_module --with-http_gzip_static_module --with-http_gunzip_module --with-http_sub_module --with-http_flv_module --with-http_addition_module --with-http_realip_module --with-http_mp4_module --with-http_auth_request_module --add-module=${Setup_Path}/src/ngx_http_substitutions_filter_module-master --add-module=/www/server/nginx/src/ngx_brotli --add-dynamic-module=/www/server/nginx/owasp/ModSecurity-nginx ${jemallocLD} ${ENABLE_NGX_PAGESPEED} ${ENABLE_HTTP3} ${ADD_EXTENSION} ${i_make_args} 2>&1|tee /tmp/nginx_config.pl
+    make -j${cpuCore} 2>&1|tee /tmp/nginx_make.pl
+}
+Install_Nginx() {
+    make install 2>&1|tee /tmp/nginx_install.pl
+    ############################### 根据官方文档定义文件权限 #########################################
+        chmod 750 /www/server/nginx/modules
+        chmod 640 /www/server/nginx/modules/ngx_http_modsecurity_module.so
+    ############################### END #########################################
+    if [ "${version}" == "openresty" ]; then
+        ln -sf /www/server/nginx/nginx/html /www/server/nginx/html
+        ln -sf /www/server/nginx/nginx/conf /www/server/nginx/conf
+        ln -sf /www/server/nginx/nginx/logs /www/server/nginx/logs
+        ln -sf /www/server/nginx/nginx/sbin /www/server/nginx/sbin
+        if [ -d "/www/server/btwaf" ]; then
+            \cp -rpa /www/server/nginx/lualib/* /www/server/btwaf
+        elif [ -d "/www/server/free_waf" ];then
+            \cp -rpa /www/server/nginx/lualib/* /www/server/free_waf
+        fi
+    fi
+
+    if [ ! -f "${Setup_Path}/sbin/nginx" ]; then
+        echo '========================================================'
+        GetSysInfo
+        echo -e "ERROR: nginx-${nginxVersion} installation failed."
+        if [ -z "${SYS_VERSION}" ];then
+            echo -e "============================================"
+            echo -e "检测到为非常用系统安装"
+            echo -e "如无法正常安装，建议更换至Centos-7或Debian-10+或Ubuntu-20+系统安装宝塔面板"
+            echo -e "详情请查看系统兼容表：https://docs.qq.com/sheet/DUm54VUtyTVNlc21H?tab=BB08J2"
+            echo -e "特殊情况可通过以下联系方式寻求安装协助情况"
+            echo -e "============================================"
+        fi
+        echo -e "安装失败，请截图以上报错信息发帖至论坛www.bt.cn/bbs求助"
+        rm -rf ${Setup_Path}
+        
+        if [ ! -f "/www/server/panel/install/nginx_down.pl" ];then
+            FILE_KEY=("./configure: error: no /www/server/nginx/src/ngx_devel_kit/config was found" "./configure: No such file or directory" "./configure: error: no /www/server/nginx/src/ngx_http_substitutions_filter_module-master/config was found" "./configure: error: no /www/server/nginx/src/nginx-dav-ext-module/config was found" "auto/options: No such file or directory" "./configure: error: no /www/server/nginx/src/ngx_cache_purge/config was found" "/www/server/nginx/src/lua_nginx_module/config was found")
+            for key in "${FILE_KEY[@]}"; do
+            	if grep -q "$key" /tmp/nginx_config.pl; then
+            		echo -e "检测到文件下载不完整导致安装失败，请尝试重新安装nginx看是否正常"
+            		echo -e "或使用极速安装看是否正常"
+            		touch /www/server/panel/install/nginx_down.pl
+            		exit 1
+            	fi
+            done
+        fi
+        
+        if [ "${i_make_args}" ];then
+            echo -e "检测到使用自定义编译参数进行安装nginx"
+            echo -e "请根据报错自行排查问题，或取消自定义编译参数重新安装"
+            exit 1
+        fi
+        
+        Centos8Check=$(cat /etc/redhat-release | grep ' 8.' | grep -iE 'centos')
+        if [ "${Centos8Check}" ];then
+            echo -e "Centos8官方已经停止支持"
+            echo -e "如是新安装系统服务器建议更换至Centos-7/Debian-11/Ubuntu-22系统安装宝塔面板"
+            exit 1
+        fi
+        
+        WSL_CHECK=$(uname -a|grep Microsoft)
+        if [ "${WSL_CHECK}" ];then
+            echo -e "宝塔未兼容测试过Microsoft WSL子系统进行安装"
+            echo -e "建议使用虚拟机安装ubuntu-22安装宝塔面板"
+            exit 1
+        fi
+        VELINUX_CHECK=$(uname -a|grep velinux1)
+        if [ "$VELINUX_CHECK" ];then
+            echo -e "宝塔未兼容测试过velinux系统进行安装"
+            echo -e "建议更换至Centos-7或Debian-10+或Ubuntu-20+系统安装宝塔面板板"
+            exit 1
+        fi
+        rockchip64_CHECK=$(uname -a|grep rockchip64)
+        if [ "$VELINUX_CHECK" ];then
+            echo -e "宝塔未兼容测试过rockchip64系统进行安装"
+            echo -e "建议更换至Centos-7或Debian-10+或Ubuntu-20+服务器系统安装宝塔面板板"
+            exit 1
+        fi
+        KALI_CHECK=$(uname -a|grep Kali)
+        if [ "${WSL_CHECK}" ];then
+            echo -e "宝塔未兼容测试过Kali系统进行安装"
+            echo -e "建议更换至Centos-7或Debian-10+或Ubuntu-20+系统安装宝塔面板板"
+            exit 1
+        fi
+        ARMBIAN_CHECK=$(uname -a|grep Armbian)
+        if [ "${ARMBIAN_CHECK}" ];then
+            echo -e "宝塔未详细兼容测试过Armbian系统进行安装"
+            echo -e "建议更换至Centos-7或Debian-10+或Ubuntu-20+系统安装宝塔面板板"
+            exit 1
+        fi
+        RJ3328_CHECK=$(uname -a|grep rk3328)
+        if [ "${RJ3328_CHECK}" ];then
+            echo -e "宝塔未兼容测试过电视盒子进行安装"
+            echo -e "建议更换至Centos-7或Debian-10+或Ubuntu-20+系统安装宝塔面板板"
+            exit 1
+        fi
+        XIAOMI_CHECK=$(uname -a|grep xiaomi)
+        if [ "${XIAOMI_CHECK}" ];then
+            echo -e "宝塔未兼容测试过安卓手机进行安装"
+            echo -e "建议更换至Centos-7或Debian-10+或Ubuntu-20+服务器系统安装宝塔面板板"
+            exit 1
+        fi
+        if [ -f "/etc/redhat-release" ];then
+            LINUX_KIT_CHECK=$(uname -a|grep linuxkit)
+            if [ "${LINUX_KIT_CHECK}" ];then
+                echo -e "宝塔未兼容测试过linuxkit(docker)环境下进行安装"
+                echo -e "建议更换至服务器系统Centos-7或Debian-10+或Ubuntu-20+系统安装宝塔面板板"
+                exit 1
+            fi
+            BBR_CHECK=$(uname -a|grep bbrplus)
+            if [ "${BBR_CHECK}" ];then
+                echo -e "检测已使用bbr更新过内核，建议更新完内核再安装宝塔面板然后再安装软件"
+                echo -e "或如需高版本内核，可使用Ubuntu-22/Debian-12进行安装宝塔面板"
+                exit 1
+            fi
+            ELREPO_CHECK=$(uname -a|grep elrepo)
+            if [ "${ELREPO_CHECK}" ];then
+                echo -e "检测更新过内核，建议更新完内核在安装宝塔面板然后再安装软件"
+                echo -e "或如需高版本内核，可使用Ubuntu-22/Debian-12进行安装宝塔面板"
+                exit 1
+            fi
+        fi
+        
+        if [ "${PM}" == "apt-get" ];then
+            UBUNTU_23_CHECK=$(cat /etc/issue|grep Ubuntu|grep 23)
+            if [ "${UBUNTU_23_CHECK}" ];then
+                echo -e "宝塔未兼容测试过Ubuntu-23（预览版）环境下进行安装"
+                echo -e "建议更换至服务器系统Centos-7或Debian-12或Ubuntu-22系统安装宝塔面板板"
+                exit 1
+            fi
+            DEBIAN_9_CHECK=$(cat /etc/issue|grep Debian|grep 9)
+            if [ "${UBUNTU_23_CHECK}" ];then
+                echo -e "Debian-9官方已经不在支持"
+                echo -e "建议更换至服务器系统Centos-7或Debian-12或Ubuntu-22系统安装宝塔面板板"
+                exit 1
+            fi
+        fi
+        
+        Error_Send
+    fi
+
+    if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "tengine" ] || [ "${version}" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
+        wget -c -O lua-resty-core-0.1.26.zip ${download_Url}/src/lua-resty-core-0.1.26.zip
+        unzip lua-resty-core-0.1.26.zip
+        cd lua-resty-core-0.1.26
+        make install PREFIX=/www/server/nginx
+        cd ..
+        rm -rf lua-resty-core-0.1.26*
+
+        wget -c -O lua-resty-lrucache-0.13.zip ${download_Url}/src/lua-resty-lrucache-0.13.zip
+        unzip lua-resty-lrucache-0.13.zip
+        cd lua-resty-lrucache-0.13
+        make install PREFIX=/www/server/nginx
+        cd ..
+        rm -rf lua-resty-core-0.1.26*
+
+    fi
+	
+    \cp -rpa ${Setup_Path}/sbin/nginx /www/backup/nginxBak
+	chmod -x /www/backup/nginxBak
+	md5sum ${Setup_Path}/sbin/nginx > /www/server/panel/data/nginx_md5.pl
+	ln -sf ${Setup_Path}/sbin/nginx /usr/bin/nginx
+    rm -f ${Setup_Path}/conf/nginx.conf
+
+    cd ${Setup_Path}
+    rm -f src.tar.gz
+}
+Update_Nginx() {
+    if [ "${nginxVersion}" = "openresty" ]; then
+        make install
+        echo -e "done"
+        nginx -v
+        echo "${nginxVersion}" >${Setup_Path}/version.pl
+        rm -f ${Setup_Path}/version_check.pl
+        exit
+    fi
+    if [ ! -f ${Setup_Path}/src/objs/nginx ]; then
+        echo '========================================================'
+        GetSysInfo
+        echo -e "ERROR: nginx-${nginxVersion} installation failed."
+        echo -e "升级失败，请截图以上报错信息发帖至论坛www.bt.cn/bbs求助"
+        exit 1
+    fi
+    sleep 1
+    /etc/init.d/nginx stop
+    mv -f ${Setup_Path}/sbin/nginx ${Setup_Path}/sbin/nginxBak
+    \cp -rfp ${Setup_Path}/src/objs/nginx ${Setup_Path}/sbin/
+    if [ "${version}" == "1.25" ] ||  [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
+        if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "tengine" ] || [ "${version}" == "1.25" ] ||  [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ] ;then
+            wget -c -O lua-resty-core-0.1.26.zip ${download_Url}/src/lua-resty-core-0.1.26.zip
+            unzip lua-resty-core-0.1.26.zip
+            cd lua-resty-core-0.1.26
+            make install PREFIX=/www/server/nginx
+            cd ..
+            rm -rf lua-resty-core-0.1.26*
+    
+            wget -c -O lua-resty-lrucache-0.13.zip ${download_Url}/src/lua-resty-lrucache-0.13.zip
+            unzip lua-resty-lrucache-0.13.zip
+            cd lua-resty-lrucache-0.13
+            make install PREFIX=/www/server/nginx
+            cd ..
+            rm -rf lua-resty-core-0.1.26*
+        fi
+        wget -O /etc/init.d/nginx ${download_Url}/init/124nginx.init
+    fi
+    sleep 1
+    /etc/init.d/nginx start
+    rm -rf ${Setup_Path}/src
+    nginx -v
+
+    echo "${nginxVersion}" >${Setup_Path}/version.pl
+    rm -f ${Setup_Path}/version_check.pl
+    if [ "${version}" == "tengine" ]; then
+        echo "2.2.4(${tengine})" >${Setup_Path}/version_check.pl
+    fi
+    exit
+}
+Set_Conf() {
+    Default_Website_Dir=$Root_Path'/wwwroot/default'
+    mkdir -p ${Default_Website_Dir}
+    mkdir -p ${Root_Path}/wwwlogs
+    mkdir -p ${Setup_Path}/conf/vhost
+    mkdir -p /usr/local/nginx/logs
+    mkdir -p ${Setup_Path}/conf/rewrite
+
+    mkdir -p /www/wwwlogs/load_balancing/tcp
+    mkdir -p /www/server/panel/vhost/nginx/tcp
+
+    wget -O ${Setup_Path}/conf/nginx.conf ${download_Url}/conf/nginx1.conf -T20
+    wget -O ${Setup_Path}/conf/pathinfo.conf ${download_Url}/conf/pathinfo.conf -T20
+    wget -O ${Setup_Path}/conf/enable-php.conf ${download_Url}/conf/enable-php.conf -T20
+    wget -O ${Setup_Path}/html/index.html ${download_Url}/error/index.html -T 20
+
+    chmod 755 /www/server/nginx/
+    chmod 755 /www/server/nginx/html/
+    chmod 755 /www/wwwroot/
+    chmod 644 /www/server/nginx/html/*
+
+    cat >${Root_Path}/server/panel/vhost/nginx/phpfpm_status.conf <<EOF
+server {
+    listen 80;
+    server_name 127.0.0.1;
+    allow 127.0.0.1;
+    location /nginx_status {
+        stub_status on;
+        access_log off;
+    }
+EOF
+    echo "" >/www/server/nginx/conf/enable-php-00.conf
+    for phpV in 52 53 54 55 56 70 71 72 73 74 75 80 81 82 83 84; do
+        cat >${Setup_Path}/conf/enable-php-${phpV}.conf <<EOF
+    location ~ [^/]\.php(/|$)
+    {
+        try_files \$uri =404;
+        fastcgi_pass  unix:/tmp/php-cgi-${phpV}.sock;
+        fastcgi_index index.php;
+        include fastcgi.conf;
+        include pathinfo.conf;
+    }
+EOF
+        cat >>${Root_Path}/server/panel/vhost/nginx/phpfpm_status.conf <<EOF
+    location /phpfpm_${phpV}_status {
+        fastcgi_pass unix:/tmp/php-cgi-${phpV}.sock;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$fastcgi_script_name;
+    }
+EOF
+    done
+    echo \} >>${Root_Path}/server/panel/vhost/nginx/phpfpm_status.conf
+
+    cat >${Setup_Path}/conf/proxy.conf <<EOF
+proxy_temp_path ${Setup_Path}/proxy_temp_dir;
+proxy_cache_path ${Setup_Path}/proxy_cache_dir levels=1:2 keys_zone=cache_one:20m inactive=1d max_size=5g;
+client_body_buffer_size 512k;
+proxy_connect_timeout 60;
+proxy_read_timeout 60;
+proxy_send_timeout 60;
+proxy_buffer_size 32k;
+proxy_buffers 4 64k;
+proxy_busy_buffers_size 128k;
+proxy_temp_file_write_size 128k;
+proxy_next_upstream error timeout invalid_header http_500 http_503 http_404;
+proxy_cache cache_one;
+EOF
+
+    cat >${Setup_Path}/conf/luawaf.conf <<EOF
+lua_shared_dict limit 10m;
+lua_package_path "/www/server/nginx/waf/?.lua";
+init_by_lua_file  /www/server/nginx/waf/init.lua;
+access_by_lua_file /www/server/nginx/waf/waf.lua;
+EOF
+
+    cat >${Root_Path}/server/panel/vhost/nginx/waf2monitor_data.conf <<EOF
+map \$http_host \$waf2monitor_blocked {
+    default  "";
+}
+EOF
+
+    mkdir -p /www/wwwlogs/waf
+    chown www.www /www/wwwlogs/waf
+    chmod 744 /www/wwwlogs/waf
+    mkdir -p /www/server/panel/vhost
+    #wget -O waf.zip ${download_Url}/install/waf/waf.zip
+    #unzip -o waf.zip -d $Setup_Path/ >/dev/null
+    if [ ! -d "/www/server/panel/vhost/wafconf" ]; then
+        mv $Setup_Path/waf/wafconf /www/server/panel/vhost/wafconf
+    fi
+
+    sed -i "s#include vhost/\*.conf;#include /www/server/panel/vhost/nginx/\*.conf;#" ${Setup_Path}/conf/nginx.conf
+    sed -i "s#/www/wwwroot/default#/www/server/phpmyadmin#" ${Setup_Path}/conf/nginx.conf
+    sed -i "/pathinfo/d" ${Setup_Path}/conf/enable-php.conf
+    sed -i "s/#limit_conn_zone.*/limit_conn_zone \$binary_remote_addr zone=perip:10m;\n\tlimit_conn_zone \$server_name zone=perserver:10m;/" ${Setup_Path}/conf/nginx.conf
+    sed -i "s/mime.types;/mime.types;\n\t\tinclude proxy.conf;\n/" ${Setup_Path}/conf/nginx.conf
+    #if [ "${nginx_version}" == "1.12.2" ] || [ "${nginx_version}" == "openresty" ] || [ "${nginx_version}" == "1.14.2" ];then
+    sed -i "s/mime.types;/mime.types;\n\t\t#include luawaf.conf;\n/" ${Setup_Path}/conf/nginx.conf
+    #fi
+
+    PHPVersion=""
+    for phpVer in 52 53 54 55 56 70 71 72 73 74 80; do
+        if [ -d "/www/server/php/${phpVer}/bin" ]; then
+            PHPVersion=${phpVer}
+        fi
+    done
+
+    if [ "${PHPVersion}" ]; then
+        \cp -r -a ${Setup_Path}/conf/enable-php-${PHPVersion}.conf ${Setup_Path}/conf/enable-php.conf
+    fi
+    
+    if [ ! -f "${Setup_Path}/conf/enable-php.conf" ];then
+        touch ${Setup_Path}/conf/enable-php.conf
+    fi
+
+    AA_PANEL_CHECK=$(cat /www/server/panel/config/config.json | grep "English")
+    if [ "${AA_PANEL_CHECK}" ]; then
+        #\cp -rf /www/server/panel/data/empty.html /www/server/nginx/html/index.html
+        wget -O /www/server/nginx/html/index.html ${download_Url}/error/index_en_nginx.html -T 20
+        chmod 644 /www/server/nginx/html/index.html
+        wget -O /www/server/panel/vhost/nginx/0.default.conf ${download_Url}/conf/nginx/en.0.default.conf
+        for phpV in 52 53 54 55 56 70 71 72 73 74 75 80 81 82 83; do
+            wget -O ${Setup_Path}/conf/enable-php-${phpV}-wpfastcgi.conf ${download_Url}/install/wordpress_conf/nginx/enable-php-${phpV}-wpfastcgi.conf
+        done
+    fi
+    
+    wget -O /etc/init.d/nginx ${download_Url}/init/nginx.init -T 20
+    if [ "${version}" == "1.23" ] || [ "${version}" == "1.24" ] || [ "${version}" == "tengine" ] || [ "${version}" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
+        if [ -d "/www/server/btwaf" ];then
+            rm -rf /www/server/btwaf/ngx
+            rm -rf /www/server/btwaf/resty
+            \cp -rpa /www/server/nginx/lib/lua/* /www/server/btwaf
+        elif [ -d "/www/server/free_waf" ];then
+            rm -rf /www/server/btwaf/ngx
+            rm -rf /www/server/btwaf/resty
+            \cp -rpa /www/server/nginx/lib/lua/* /www/server/free_waf
+        else
+            sed -i "/lua_package_path/d" /www/server/nginx/conf/nginx.conf
+            sed -i '/include proxy\.conf;/a \        lua_package_path "/www/server/nginx/lib/lua/?.lua;;";' /www/server/nginx/conf/nginx.conf
+        fi
+        wget -O /etc/init.d/nginx ${download_Url}/init/124nginx.init -T 20
+        if [ "${ARM_CHECK}" ]; then
+            sed -i '/lua_package_path/s|^|#|' /www/server/nginx/conf/nginx.conf
+        fi
+    fi
+    if [ "${version}" == "1.25" ] || [ "${version}" == "1.26" ] || [ "${version}" == "1.27" ];then
+        HTTP_POST_CHECK=$(cat /www/server/nginx/conf/fastcgi.conf|grep "HTTP_HOST")
+        if [ -z "${HTTP_POST_CHECK}" ];then
+            echo "fastcgi_param  HTTP_HOST          \$host;" >> /www/server/nginx/conf/fastcgi.conf
+        fi
+    fi
+
+    HTTP3_CHECK=$(nginx -V 2>&1|grep http_v3)
+    if [ -z "${HTTP3_CHECK}" ];then
+        QUIC_CHECK=$(grep quic /www/server/panel/vhost/nginx/*.conf)
+        if [ "${QUIC_CHECK}" ];then
+            sed -i "/listen 443 quic/d" /www/server/panel/vhost/nginx/*.conf
+            sed -i "/quic=/d" /www/server/panel/vhost/nginx/*.conf
+            sed -i "/http2 on/d" /www/server/panel/vhost/nginx/*.conf
+        fi
+    fi
+
+
+    chmod +x /etc/init.d/nginx
+}
+Set_Version() {
+    if [ "${version}" == "tengine" ]; then
+        echo "-Tengine2.2.3" >${Setup_Path}/version.pl
+        echo "2.2.4(${tengine})" >${Setup_Path}/version_check.pl
+    elif [ "${version}" == "openresty" ]; then
+        echo "openresty" >${Setup_Path}/version.pl
+        echo "openresty-${openresty}" >${Setup_Path}/version_check.pl
+    else
+        echo "${nginxVersion}" >${Setup_Path}/version.pl
+    fi
+
+    if [ "${GMSSL}" ]; then
+        echo "1.18国密版" >${Setup_Path}/version_check.pl
+    fi
+}
+
+Uninstall_Nginx() {
+    if [ -f "/etc/init.d/nginx" ]; then
+        Service_Del
+        /etc/init.d/nginx stop
+        rm -f /etc/init.d/nginx
+    fi
+    [ -f "${Setup_Path}/rpm.pl" ] && yum remove bt-$(cat ${Setup_Path}/rpm.pl) -y
+    [ -f "${Setup_Path}/deb.pl" ] && apt-get remove bt-$(cat ${Setup_Path}/deb.pl) -y
+    pkill -9 nginx
+    rm -rf ${Setup_Path}
+    rm -rf /www/server/btwaf/ngx
+    rm -rf /www/server/btwaf/resty
+    rm -rf /www/server/btwaf/librestysignal.so
+    rm -rf /www/server/btwaf/rds
+    rm -rf /www/server/btwaf/redis
+    rm -rf /www/server/btwaf/tablepool.lua
+}
+
+actionType=$1
+version=$2
+
+if [ "${actionType}" == "uninstall" ]; then
+    Service_Del
+    Uninstall_Nginx
+else
+    case "${version}" in
+    '1.10')
+        nginxVersion=${nginx_112}
+        ;;
+    '1.12')
+        nginxVersion=${nginx_112}
+        ;;
+    '1.14')
+        nginxVersion=${nginx_114}
+        ;;
+    '1.15')
+        nginxVersion=${nginx_115}
+        ;;
+    '1.16')
+        nginxVersion=${nginx_116}
+        ;;
+    '1.17')
+        nginxVersion=${nginx_117}
+        ;;
+    '1.18')
+        nginxVersion=${nginx_118}
+        ;;
+    '1.18.gmssl')
+        nginxVersion=${nginx_118}
+        GMSSL="True"
+        ;;
+    '1.19')
+        nginxVersion=${nginx_119}
+        ;;
+    '1.20')
+        nginxVersion=${nginx_120}
+        ;;
+    '1.21')
+        nginxVersion=${nginx_121}
+        ;;
+    '1.22')
+        nginxVersion=${nginx_122}
+        ;;
+    '1.23')
+        nginxVersion=${nginx_123}
+        ;;
+    '1.24')
+        nginxVersion=${nginx_124}
+        ;;
+    '1.25')
+        nginxVersion=${nginx_125}
+        ;;
+    '1.26')
+        nginxVersion=${nginx_126}
+        ;;
+    '1.27')
+        nginxVersion=${nginx_127}
+        ;;
+    '1.8')
+        nginxVersion=${nginx_108}
+        ;;
+    'openresty')
+        nginxVersion=${openresty}
+        ;;
+    *)
+        nginxVersion=${tengine}
+        version="tengine"
+        ;;
+    esac
+    if [ "${actionType}" == "install" ]; then
+        if [ -f "/www/server/nginx/sbin/nginx" ]; then
+            Uninstall_Nginx
+        fi
+        System_Lib
+        if [ -z "${ARM_CHECK}" ]; then
+            Install_Jemalloc
+            Install_LuaJIT
+            Install_cjson
+        fi
+        Download_Src
+        Install_Configure
+        Install_Nginx
+        Set_Conf
+        Set_Version
+        Service_Add
+        /etc/init.d/nginx start
+    elif [ "${actionType}" == "update" ]; then
+        if [ "${version}" == "1.25" ] || [ "${version}" == "1.27" ];then
+            Install_LuaJIT
+        fi
+        Download_Src
+        Install_Configure
+        Update_Nginx
+    fi
+fi
+
