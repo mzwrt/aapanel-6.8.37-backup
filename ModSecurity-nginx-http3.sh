@@ -17,7 +17,7 @@ if [[ "$arch_lujit" == "aarch64" ]]; then
     echo "ARM 架构 detected."
   
     # 提示用户是否继续执行准备脚本
-    read -p "检测到您是ARM架构CPU，是否安装lujit(nginx-lua)宝塔防火墙必备模块 (Y/N): " choice
+    read -p "检测到您是ARM架构CPU，是否安装lujit(nginx-lua)宝塔防火墙必备模块，注意：此脚本有问题需要自己调试脚本18-81行代码 (Y/N): " choice
     case "$choice" in
         [Yy]*)
             echo "添加nginx-lujit安装脚本..."
