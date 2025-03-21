@@ -32,7 +32,7 @@
 nginx.sh 使用方法：<br>
 
 ```
- rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/refs/heads/main/ModSecurity-nginx-http3.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.27
+ rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/refs/heads/main/nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.27
  ```
 <br>
 
