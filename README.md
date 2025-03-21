@@ -24,12 +24,12 @@
 文件是基于宝塔的nginx.sh安装文件 基于debian 12 编写的兼容ubuntu系统<br>
 <br>
 注意：所有ModSecurity-nginx.sh除ubuntu/debian系统外其他系统未安装相应依赖<br>
-# nginx-1.27 ModSecurity brotli http3版<br>
-ModSecurity-nginx-http3.sh基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，将nginx修改成自定义字段和去除nginx版本号<br>
-ModSecurity-nginx-http3.sh是新版，最高支持1.27，默认开启http3，<br>
+# nginx.sh 文件<br>
+基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，将nginx修改成自定义字段和去除nginx版本号<br>
+最高支持1.27，默认开启http3，<br>
 因为升级文件luajit经常报错排错很费时费力所以删除luajit安装，不再支持使用宝塔防火墙，ModSecurity很全面和网络很多详细教程已经足够使用了，如果需要请修改1305行和1315行删除注释自己排错
 
-ModSecurity-nginx-http3.sh 使用方法：<br>
+nginx.sh 使用方法：<br>
 
 ```
  rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/refs/heads/main/ModSecurity-nginx-http3.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.27
@@ -57,24 +57,6 @@ modsecurity on;
 这样你的网站已经初步开启owasp防火墙了，然后就是后面的调试工作，遇到403错误就查看网站日志文件进行规则调试
 <br>
 
-# nginx-1.24版本 brotli版
-nginx.sh 基于BT官方文件修改了一下，文件里面有详细解释，主要是以优化和加强安全为主，添加了brotli模块，修改响应的头信息server字段值，将nginx修改成自定义字段和自定义版本号<br>
-nginx.sh 使用方法：
-
-     rm -f /www/server/panel/install/nginx.sh && wget -O /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
-
-注意修改命令尾部的版本号，默认安装 nginx 1.24
-<br><br>
-
-# nginx-1.24版本 brotli和ModSecurity版
-
-ModSecurity-nginx.sh是旧版最高支持1.24，默认安装1.24
-
-
-ModSecurity-nginx.sh 使用方法：
-```
-     rm -f /www/server/panel/install/nginx.sh && wget -O  /www/server/panel/install/nginx.sh https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/main/ModSecurity-nginx.sh -T 20 && bash /www/server/panel/install/nginx.sh install 1.24
-```
 
 # 下面是对于ModSecurity一些说明和优化细节
 根据OWASP CRS官方文档添加
