@@ -21,6 +21,10 @@ if [ -f /www/server/nginx/owasp/owasp-rules/crs-setup.conf ]; then
 fi
 wget -q -O /www/server/nginx/owasp/owasp-rules/crs-setup.conf "https://raw.githubusercontent.com/mzwrt/aapanel-6.8.37-backup/refs/heads/main/ModSecurity/crs-setup.conf"
 
+#
+mv /www/server/nginx/owasp/owasp-rules/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example /www/server/nginx/owasp/owasp-rules/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf
+mv /www/server/nginx/owasp/owasp-rules/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example /www/server/nginx/owasp/owasp-rules/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf
+
 # 下载 modsecurity.conf 文件并备份旧文件（如果存在）
 echo "Downloading modsecurity.conf..."
 if [ -f /www/server/nginx/owasp/ModSecurity/modsecurity.conf ]; then
