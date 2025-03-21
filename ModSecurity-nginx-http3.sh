@@ -276,13 +276,13 @@ Install_Jemalloc() {
 ############################ LuaJIT从luajit2-2.1-20230410升级到luajit2-2.1-20240815 #####################################
 Install_LuaJIT2(){
     LUAJIT_INC_PATH="luajit-2.1"
-    wget -c -O luajit2-2.1-20250117.zip https://github.com/openresty/luajit2/archive/refs/tags/v2.1-20250117.zip
-    unzip -o luajit2-2.1-20250117.zip
-    cd luajit2-2.1-20250117
+    wget -c -O luajit2-2.1-20240815.zip https://github.com/openresty/luajit2/archive/refs/tags/v2.1-20240815.zip
+    unzip -o luajit2-2.1-20240815.zip
+    cd luajit2-2.1-20240815
     make -j${cpuCore}
     make install
     cd .. 
-    rm -rf luajit2-2.1-20250117*
+    rm -rf luajit2-2.1-20240815*
     ln -sf /usr/local/lib/libluajit-5.1.so.2 /usr/local/lib64/libluajit-5.1.so.2
     LD_SO_CHECK=$(cat /etc/ld.so.conf|grep /usr/local/lib)
     if [ -z "${LD_SO_CHECK}" ];then
