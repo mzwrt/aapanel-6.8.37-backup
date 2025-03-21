@@ -1222,6 +1222,8 @@ Uninstall_Nginx() {
     rm -rf /www/server/btwaf/rds
     rm -rf /www/server/btwaf/redis
     rm -rf /www/server/btwaf/tablepool.lua
+    ####################### 卸载时删除modsecurity ###########################
+    rm -rf /usr/local/modsecurity
 }
 
 actionType=$1
@@ -1300,11 +1302,12 @@ else
             Uninstall_Nginx
         fi
         System_Lib
-        if [ -z "${ARM_CHECK}" ]; then
-            Install_Jemalloc
-            Install_LuaJIT
-            Install_cjson
-        fi
+	####################### 禁用luajit ###########################
+        #if [ -z "${ARM_CHECK}" ]; then
+        #    Install_Jemalloc
+        #    Install_LuaJIT
+        #    Install_cjson
+        #fi
         Download_Src
         Install_Configure
         Install_Nginx
@@ -1313,9 +1316,10 @@ else
         Service_Add
         /etc/init.d/nginx start
     elif [ "${actionType}" == "update" ]; then
-        if [ "${version}" == "1.25" ] || [ "${version}" == "1.27" ];then
-            Install_LuaJIT
-        fi
+    ####################### 禁用luajit ###########################
+        #if [ "${version}" == "1.25" ] || [ "${version}" == "1.27" ];then
+        #    Install_LuaJIT
+        #fi
         Download_Src
         Install_Configure
         Update_Nginx
